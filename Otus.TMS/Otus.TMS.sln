@@ -5,17 +5,21 @@ VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otus.TMS", "Otus.TMS\Otus.TMS.csproj", "{22E8CD99-4B89-41E4-A0CE-CAA19F0F4741}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Otus.TMS.Infrastructure.DataAccess", "Otus.TMS.Infrastructure.DataAccess", "{9264D662-40E9-450C-990C-559F330798D1}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Otus.TMS.Infrastructure", "Otus.TMS.Infrastructure", "{9264D662-40E9-450C-990C-559F330798D1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Otus.TMS.Core.Domain", "Otus.TMS.Core.Domain", "{8BB7176E-691A-477E-BF1B-0F4A50866FF6}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Otus.TMS.Core", "Otus.TMS.Core", "{223FA6DB-E8E7-4149-B9CA-1467CB0DE2BF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Otus.TMS.Core.Application", "Otus.TMS.Core.Application", "{223FA6DB-E8E7-4149-B9CA-1467CB0DE2BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otus.TMS.Infrastructure.DataAccess", "Otus.TMS.Infrastructure.DataAccess\Otus.TMS.Infrastructure.DataAccess.csproj", "{587C0C69-F1A6-447F-95E8-56BD3AAFAF49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otus.TMS.Infrastructure.DataAccess", "Otus.TMS.Infrastructure.DataAccess\Otus.TMS.Infrastructure.DataAccess.csproj", "{587C0C69-F1A6-447F-95E8-56BD3AAFAF49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otus.TMS.Core.Domain", "Otus.TMS.Core.Domain\Otus.TMS.Core.Domain.csproj", "{EBEC32A0-C274-4A7A-8198-5AAEB982E810}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otus.TMS.Core.Domain", "Otus.TMS.Core.Domain\Otus.TMS.Core.Domain.csproj", "{EBEC32A0-C274-4A7A-8198-5AAEB982E810}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Otus.TMS.Core.Application", "Otus.TMS.Core.Application\Otus.TMS.Core.Application.csproj", "{BDBBDFE1-1BF9-44C9-AED3-9DEE1B3737D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otus.TMS.Core.Application", "Otus.TMS.Core.Application\Otus.TMS.Core.Application.csproj", "{BDBBDFE1-1BF9-44C9-AED3-9DEE1B3737D6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otus.TMS.Infrastructure.Interfaces", "Otus.TMS.Infrastructure.Interfaces\Otus.TMS.Infrastructure.Interfaces.csproj", "{15C8BAAD-14AA-4ED9-9A64-A024B3FD9504}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otus.Tests", "Otus.Tests\Otus.Tests.csproj", "{FFE716E8-CC54-429E-83D4-E918BEF42957}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Otus.TMS.Tests", "Otus.TMS.Tests", "{50189F3C-1ECD-48DD-B3FC-BC02D559B10E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,14 +43,24 @@ Global
 		{BDBBDFE1-1BF9-44C9-AED3-9DEE1B3737D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDBBDFE1-1BF9-44C9-AED3-9DEE1B3737D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDBBDFE1-1BF9-44C9-AED3-9DEE1B3737D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15C8BAAD-14AA-4ED9-9A64-A024B3FD9504}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15C8BAAD-14AA-4ED9-9A64-A024B3FD9504}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15C8BAAD-14AA-4ED9-9A64-A024B3FD9504}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15C8BAAD-14AA-4ED9-9A64-A024B3FD9504}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFE716E8-CC54-429E-83D4-E918BEF42957}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFE716E8-CC54-429E-83D4-E918BEF42957}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFE716E8-CC54-429E-83D4-E918BEF42957}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFE716E8-CC54-429E-83D4-E918BEF42957}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{587C0C69-F1A6-447F-95E8-56BD3AAFAF49} = {9264D662-40E9-450C-990C-559F330798D1}
-		{EBEC32A0-C274-4A7A-8198-5AAEB982E810} = {8BB7176E-691A-477E-BF1B-0F4A50866FF6}
+		{EBEC32A0-C274-4A7A-8198-5AAEB982E810} = {223FA6DB-E8E7-4149-B9CA-1467CB0DE2BF}
 		{BDBBDFE1-1BF9-44C9-AED3-9DEE1B3737D6} = {223FA6DB-E8E7-4149-B9CA-1467CB0DE2BF}
+		{15C8BAAD-14AA-4ED9-9A64-A024B3FD9504} = {9264D662-40E9-450C-990C-559F330798D1}
+		{FFE716E8-CC54-429E-83D4-E918BEF42957} = {50189F3C-1ECD-48DD-B3FC-BC02D559B10E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48563458-0997-4A1D-B57B-FD51160BEB5B}

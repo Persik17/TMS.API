@@ -7,10 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Contexts\" />
-    <Folder Include="Scripts\" />
-    <Folder Include="Queries\" />
+    <Folder Include="DataServices\" />
+    <Folder Include="EventBus\" />
+    <Folder Include="Caching\" />
+    <Folder Include="UnitOfWork\" />
     <Folder Include="Repositories\" />
+    <Folder Include="Infrastructures\" />
   </ItemGroup>
 
 </Project>
