@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Otus.TMS.Infrastructure.DataAccess.Contexts;
-using Otus.TMS.Infrastructure.DataAccess.Contracts;
 using Otus.TMS.Infrastructure.DataAccess.DataModels;
+using Otus.TMS.Infrastructure.DataAccess.Interfaces;
 
 namespace Otus.TMS.Infrastructure.DataAccess.Repositories
 {
-    public class DepartmentRepository : ICommandRepository<Department>, IQueryRepository<Department>
+    public class DepartmentRepository : IAuditableCommandRepository<Department>, IAuditableQueryRepository<Department>
     {
         private readonly PostgreSqlTmsContext _context;
 

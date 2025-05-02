@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Otus.TMS.Infrastructure.DataAccess.Contexts;
-using Otus.TMS.Infrastructure.DataAccess.Contracts;
 using Otus.TMS.Infrastructure.DataAccess.DataModels;
+using Otus.TMS.Infrastructure.DataAccess.Interfaces;
 
 namespace Otus.TMS.Infrastructure.DataAccess.Repositories
 {
-    public class CompanyRepository : ICommandRepository<Company>, IQueryRepository<Company>
+    public class CompanyRepository : IAuditableCommandRepository<Company>, IAuditableQueryRepository<Company>
     {
         private readonly PostgreSqlTmsContext _context;
 
