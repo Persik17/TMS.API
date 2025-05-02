@@ -6,15 +6,11 @@ namespace Otus.TMS.Infrastructure.DataAccess.Contexts
 {
     public class PostgreSqlTmsContext : DbContext
     {
-        public PostgreSqlTmsContext(DbContextOptions<PostgreSqlTmsContext> options)
-            : base(options)
-        {
-        }
-
         public DbSet<Company> Companies { get; set; }
         public DbSet<Board> Boards { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<BoardUser> BoardUsers { get; set; }
+        public DbSet<BoardUserRole> BoardUserRoles { get; set; }
         public DbSet<Column> Columns { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Credential> Credentials { get; set; }
@@ -29,32 +25,29 @@ namespace Otus.TMS.Infrastructure.DataAccess.Contexts
         public DbSet<Department> Departments { get; set; }
         public DbSet<UserDepartment> UserDepartments { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public PostgreSqlTmsContext(DbContextOptions<PostgreSqlTmsContext> options) : base(options)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=otusTMS;Username=postgres;Password=postgres");
-            }
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new BoardConfiguration());
-            modelBuilder.ApplyConfiguration(new UserConfiguration());
-            modelBuilder.ApplyConfiguration(new BoardUserConfiguration());
-            modelBuilder.ApplyConfiguration(new ColumnConfiguration());
-            modelBuilder.ApplyConfiguration(new CommentConfiguration());
-            modelBuilder.ApplyConfiguration(new CredentialConfiguration());
-            modelBuilder.ApplyConfiguration(new CredentialHistoryConfiguration());
-            modelBuilder.ApplyConfiguration(new NotificationSettingConfiguration());
-            modelBuilder.ApplyConfiguration(new PermissionConfiguration());
-            modelBuilder.ApplyConfiguration(new RoleConfiguration());
-            modelBuilder.ApplyConfiguration(new RolePermissionConfiguration());
-            modelBuilder.ApplyConfiguration(new TaskConfiguration());
-            modelBuilder.ApplyConfiguration(new TaskTypeConfiguration());
-            modelBuilder.ApplyConfiguration(new TelegramAccountConfiguration());
-            modelBuilder.ApplyConfiguration(new UserDepartmentConfiguration());
-            modelBuilder.ApplyConfiguration(new DepartmentConfiguration());
+            //modelBuilder.ApplyConfiguration(new BoardConfiguration());
+            //modelBuilder.ApplyConfiguration(new UserConfiguration());
+            //modelBuilder.ApplyConfiguration(new BoardUserConfiguration());
+            //modelBuilder.ApplyConfiguration(new ColumnConfiguration());
+            //modelBuilder.ApplyConfiguration(new CommentConfiguration());
+            //modelBuilder.ApplyConfiguration(new CredentialConfiguration());
+            //modelBuilder.ApplyConfiguration(new CredentialHistoryConfiguration());
+            //modelBuilder.ApplyConfiguration(new NotificationSettingConfiguration());
+            //modelBuilder.ApplyConfiguration(new PermissionConfiguration());
+            //modelBuilder.ApplyConfiguration(new RoleConfiguration());
+            //modelBuilder.ApplyConfiguration(new RolePermissionConfiguration());
+            //modelBuilder.ApplyConfiguration(new TaskConfiguration());
+            //modelBuilder.ApplyConfiguration(new TaskTypeConfiguration());
+            //modelBuilder.ApplyConfiguration(new TelegramAccountConfiguration());
+            //modelBuilder.ApplyConfiguration(new UserDepartmentConfiguration());
+            //modelBuilder.ApplyConfiguration(new DepartmentConfiguration());
         }
     }
 }
