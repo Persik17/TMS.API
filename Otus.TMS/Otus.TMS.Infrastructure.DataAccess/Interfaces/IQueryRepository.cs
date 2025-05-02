@@ -1,8 +1,8 @@
 ﻿using Otus.TMS.Domain.Models;
 
-namespace Otus.TMS.Infrastructure.DataAccess.Contracts
+namespace Otus.TMS.Infrastructure.DataAccess.Interfaces
 {
-    public interface IQueryRepository<TEntity> where TEntity : class, IEntity, IAuditableEntity
+    public interface IQueryRepository<TEntity> where TEntity : class, IEntity
     {
         /// <summary>
         /// Получает сущность по идентификатору.
@@ -19,4 +19,6 @@ namespace Otus.TMS.Infrastructure.DataAccess.Contracts
         /// <returns>Список сущностей.</returns>
         Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default);
     }
+
+    public interface IAuditableQueryRepository<TEntity> : IQueryRepository<TEntity> where TEntity : class, IEntity, IAuditableEntity { }
 }

@@ -1,8 +1,8 @@
 ﻿using Otus.TMS.Domain.Models;
 
-namespace Otus.TMS.Infrastructure.DataAccess.Contracts
+namespace Otus.TMS.Infrastructure.DataAccess.Interfaces
 {
-    public interface ICommandRepository<TEntity> where TEntity : class, IEntity, IAuditableEntity
+    public interface ICommandRepository<TEntity> where TEntity : class, IEntity
     {
         /// <summary>
         /// Добавляет новую сущность.
@@ -25,4 +25,6 @@ namespace Otus.TMS.Infrastructure.DataAccess.Contracts
         /// <param name="cancellationToken">Токен отмены операции.</param>
         Task DeleteAsync(Guid entityId, CancellationToken cancellationToken = default);
     }
+
+    public interface IAuditableCommandRepository<TEntity> : ICommandRepository<TEntity> where TEntity : class, IEntity, IAuditableEntity { }
 }
