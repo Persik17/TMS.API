@@ -21,7 +21,6 @@ namespace Otus.TMS.Infrastructure.DataAccess.DataModels
         public string Description { get; set; }
 
         public Guid DepartmentId { get; set; }
-
         public Department Department { get; set; }
 
         public int BoardType { get; set; }
@@ -32,11 +31,5 @@ namespace Otus.TMS.Infrastructure.DataAccess.DataModels
         public List<BoardUserRole> BoardUserRoles { get; set; } = [];
 
         public Board() { }
-
-        public Board(Guid id)
-        {
-            Id = id;
-            CreationDate = DateTime.UtcNow;
-        }
     }
 }
