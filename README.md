@@ -1,4 +1,4 @@
-# Otus.TMS
+# TMS.API
 Учебный проект для реализации Task Management System
 
 Участники проекта:
