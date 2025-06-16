@@ -33,22 +33,7 @@ namespace TMS.Infrastructure.DataAccess.Contexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //modelBuilder.ApplyConfiguration(new BoardConfiguration());
-            //modelBuilder.ApplyConfiguration(new UserConfiguration());
-            //modelBuilder.ApplyConfiguration(new BoardUserConfiguration());
-            //modelBuilder.ApplyConfiguration(new ColumnConfiguration());
-            //modelBuilder.ApplyConfiguration(new CommentConfiguration());
-            //modelBuilder.ApplyConfiguration(new CredentialConfiguration());
-            //modelBuilder.ApplyConfiguration(new CredentialHistoryConfiguration());
-            //modelBuilder.ApplyConfiguration(new NotificationSettingConfiguration());
-            //modelBuilder.ApplyConfiguration(new PermissionConfiguration());
-            //modelBuilder.ApplyConfiguration(new RoleConfiguration());
-            //modelBuilder.ApplyConfiguration(new RolePermissionConfiguration());
-            //modelBuilder.ApplyConfiguration(new TaskConfiguration());
-            //modelBuilder.ApplyConfiguration(new TaskTypeConfiguration());
-            //modelBuilder.ApplyConfiguration(new TelegramAccountConfiguration());
-            //modelBuilder.ApplyConfiguration(new UserDepartmentConfiguration());
-            //modelBuilder.ApplyConfiguration(new DepartmentConfiguration());
+
         }
     }
 }
