@@ -26,7 +26,7 @@ namespace TMS.API.Configuration
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<PostgreSqlTmsContext>(options =>
-                options.UseNpgsql("Host=localhost;Port=5432;Database=otusTMS;Username=postgres;Password=3353"));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Host=localhost;Port=5432;Database=otusTMS;Username=postgres;Password=3353"));
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
             builder.Services.AddTransient<IRedisCacheContext, RedisCacheContext>();
