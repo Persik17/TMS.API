@@ -1,16 +1,21 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
+using TMS.Abstractions.Interfaces.Cache;
 using TMS.Application;
 using TMS.Infrastructure.DataAccess;
 using TMS.Infrastructure.DataAccess.Contexts;
 
 namespace TMS.API.Configuration
 {
+    /// <summary>
+    /// Provides methods for configuring application services, middleware, and infrastructure components.
+    /// </summary>
     public static class ConfigureServices
     {
         /// <summary>
-        /// Configures application and infrastructure services.
+        /// Configures application and infrastructure services, including data access, caching, and API features.
         /// </summary>
-        /// <param name="builder">The WebApplicationBuilder instance.</param>
+        /// <param name="builder">The <see cref="WebApplicationBuilder"/> instance used to configure the application.</param>
         public static void Apply(WebApplicationBuilder builder)
         {
             builder.Services.AddApplicationServices();
@@ -22,6 +27,9 @@ namespace TMS.API.Configuration
 
             builder.Services.AddDbContext<PostgreSqlTmsContext>(options =>
                 options.UseNpgsql("Host=localhost;Port=5432;Database=otusTMS;Username=postgres;Password=3353"));
+
+            builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
+            builder.Services.AddTransient<IRedisCacheContext, RedisCacheContext>();
         }
     }
 }
