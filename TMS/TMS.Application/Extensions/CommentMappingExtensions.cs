@@ -1,4 +1,4 @@
-﻿using TMS.Abstractions.Models.DTOs;
+﻿using TMS.Abstractions.Models.DTOs.Task;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Extensions

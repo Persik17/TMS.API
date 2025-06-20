@@ -5,6 +5,12 @@
     /// </summary>
     public class AuthenticationFailedException : Exception
     {
-        public AuthenticationFailedException(string message) : base(message) { }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthenticationFailedException"/> class.
+        /// </summary>
+        /// <param name="message">The message that describes the reason for the authentication failure.</param>
+        public AuthenticationFailedException(string message) : base(message)
+        {
+        }
     }
 }

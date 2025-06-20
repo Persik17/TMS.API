@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Exceptions;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Services;
+using TMS.Application.DTOs.Company;
 using TMS.Application.Extensions;
-using TMS.Application.Models.DTOs.Company;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 using Task = System.Threading.Tasks.Task;
@@ -23,9 +23,9 @@ namespace TMS.Application.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="CompanyService"/> class.
         /// </summary>
-        /// <param name="commandRepository">Repository for write operations.</param>
-        /// <param name="queryRepository">Repository for read operations.</param>
-        /// <param name="logger">Logger instance for diagnostics.</param>
+        /// <param name="commandRepository">The repository for performing auditable company commands (e.g., insert, update).</param>
+        /// <param name="queryRepository">The repository for performing auditable company queries (e.g., get by id).</param>
+        /// <param name="logger">The logger for logging company service events.</param>
         public CompanyService(
             IAuditableCommandRepository<Company> commandRepository,
             IAuditableQueryRepository<Company> queryRepository,

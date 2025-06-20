@@ -1,4 +1,4 @@
-﻿using TMS.Application.Models.DTOs.NotificationSetting;
+﻿using TMS.Application.DTOs.NotificationSetting;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Extensions

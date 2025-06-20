@@ -2,8 +2,8 @@
 using TMS.Abstractions.Exceptions;
 using TMS.Abstractions.Interfaces.Repositories;
 using TMS.Abstractions.Interfaces.Services;
+using TMS.Application.DTOs.Role;
 using TMS.Application.Extensions;
-using TMS.Application.Models.DTOs.Role;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Services
@@ -17,6 +17,11 @@ namespace TMS.Application.Services
         private readonly IRoleRepository<Role> _roleRepository;
         private readonly ILogger<RoleService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RoleService"/> class.
+        /// </summary>
+        /// <param name="roleRepository">The repository for accessing role data.</param>
+        /// <param name="logger">The logger for logging role service events.</param>
         public RoleService(
             IRoleRepository<Role> roleRepository,
             ILogger<RoleService> logger)
@@ -25,6 +30,7 @@ namespace TMS.Application.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<RoleDto> CreateAsync(RoleCreateDto createDto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(createDto);
@@ -39,6 +45,7 @@ namespace TMS.Application.Services
             return entity.ToRoleDto();
         }
 
+        /// <inheritdoc/>
         public async Task<RoleDto> UpdateAsync(RoleDto dto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -57,6 +64,7 @@ namespace TMS.Application.Services
             return entity.ToRoleDto();
         }
 
+        /// <inheritdoc/>
         public async Task<RoleDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var entity = await _roleRepository.GetByIdAsync(id, cancellationToken);
@@ -68,6 +76,7 @@ namespace TMS.Application.Services
             return entity.ToRoleDto();
         }
 
+        /// <inheritdoc/>
         public async System.Threading.Tasks.Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             await _roleRepository.DeleteAsync(id, cancellationToken);

@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Exceptions;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Services;
+using TMS.Application.DTOs.NotificationSetting;
 using TMS.Application.Extensions;
-using TMS.Application.Models.DTOs.NotificationSetting;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Services
@@ -18,6 +18,12 @@ namespace TMS.Application.Services
         private readonly IQueryRepository<NotificationSetting> _queryRepository;
         private readonly ILogger<NotificationSettingService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NotificationSettingService"/> class.
+        /// </summary>
+        /// <param name="commandRepository">The repository for performing notification setting commands (e.g., insert, update).</param>
+        /// <param name="queryRepository">The repository for performing notification setting queries (e.g., get by id).</param>
+        /// <param name="logger">The logger for logging notification setting service events.</param>
         public NotificationSettingService(
             ICommandRepository<NotificationSetting> commandRepository,
             IQueryRepository<NotificationSetting> queryRepository,
@@ -28,6 +34,7 @@ namespace TMS.Application.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<NotificationSettingDto> CreateAsync(NotificationSettingCreateDto createDto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(createDto);
@@ -41,6 +48,8 @@ namespace TMS.Application.Services
 
             return entity.ToNotificationSettingDto();
         }
+
+        /// <inheritdoc/>
 
         public async Task<NotificationSettingDto> UpdateAsync(NotificationSettingDto dto, CancellationToken cancellationToken = default)
         {
@@ -60,6 +69,7 @@ namespace TMS.Application.Services
             return entity.ToNotificationSettingDto();
         }
 
+        /// <inheritdoc/>
         public async Task<NotificationSettingDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var entity = await _queryRepository.GetByIdAsync(id, cancellationToken);

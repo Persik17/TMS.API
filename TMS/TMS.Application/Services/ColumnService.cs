@@ -1,16 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Exceptions;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Services;
+using TMS.Application.DTOs.Column;
 using TMS.Application.Extensions;
-using TMS.Application.Models.DTOs.Column;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Services
 {
     /// <summary>
-    /// Service for managing Column entities.
-    /// Provides CRUD operations and uses logging for diagnostics and monitoring.
+    /// Provides a service for managing columns.
+    /// Implements operations for creating, retrieving, and updating columns.
     /// </summary>
     public class ColumnService : IColumnService<ColumnDto, ColumnCreateDto>
     {
@@ -18,6 +18,12 @@ namespace TMS.Application.Services
         private readonly IAuditableQueryRepository<Column> _queryRepository;
         private readonly ILogger<ColumnService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ColumnService"/> class.
+        /// </summary>
+        /// <param name="commandRepository">The repository for performing auditable column commands (e.g., insert, update).</param>
+        /// <param name="queryRepository">The repository for performing auditable column queries (e.g., get by id).</param>
+        /// <param name="logger">The logger for logging column service events.</param>
         public ColumnService(
             IAuditableCommandRepository<Column> commandRepository,
             IAuditableQueryRepository<Column> queryRepository,
@@ -28,6 +34,7 @@ namespace TMS.Application.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<ColumnDto> CreateAsync(ColumnCreateDto createDto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(createDto);
@@ -45,6 +52,7 @@ namespace TMS.Application.Services
             return createdColumn.ToColumnDto();
         }
 
+        /// <inheritdoc/>
         public async Task<ColumnDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             if (id == Guid.Empty)
@@ -55,11 +63,15 @@ namespace TMS.Application.Services
 
             var column = await _queryRepository.GetByIdAsync(id, cancellationToken);
             if (column == null)
+            {
                 _logger.LogWarning("Column with id {Id} not found", id);
+                return null; // Consider returning null instead of throwing an exception if the column is not found.
+            }
 
-            return column?.ToColumnDto();
+            return column.ToColumnDto();
         }
 
+        /// <inheritdoc/>
         public async Task<ColumnDto> UpdateAsync(ColumnDto dto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -91,6 +103,7 @@ namespace TMS.Application.Services
             return dto;
         }
 
+        /// <inheritdoc/>
         public async System.Threading.Tasks.Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             if (id == Guid.Empty)

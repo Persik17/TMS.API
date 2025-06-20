@@ -4,7 +4,7 @@ namespace TMS.Abstractions.Interfaces.Services
 {
     /// <summary>
     /// Service contract for managing Permission entities.
-    /// Provides create, update, and get operations.
+    /// Provides create, read, update, and delete operations.
     /// </summary>
     /// <typeparam name="TReadModel">DTO used for reading permissions.</typeparam>
     /// <typeparam name="TCreateModel">DTO used for creating permissions.</typeparam>

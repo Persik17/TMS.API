@@ -1,4 +1,4 @@
-﻿using TMS.Application.Models.DTOs.Task;
+﻿using TMS.Application.DTOs.Task;
 
 namespace TMS.Application.Extensions
 {

@@ -1,4 +1,4 @@
-﻿using TMS.Application.Models.DTOs.Permission;
+﻿using TMS.Application.DTOs.Permission;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Extensions

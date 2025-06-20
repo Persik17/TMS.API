@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Infrastructure.DataAccess.Contexts;
 using TMS.Infrastructure.DataAccess.DataModels;
 namespace TMS.Infrastructure.DataAccess.Repositories

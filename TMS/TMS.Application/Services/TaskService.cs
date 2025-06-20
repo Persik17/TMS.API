@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Exceptions;
 using TMS.Abstractions.Interfaces.Repositories;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Services;
-using TMS.Abstractions.Models.DTOs;
+using TMS.Abstractions.Models.DTOs.Task;
+using TMS.Application.DTOs.Task;
 using TMS.Application.Extensions;
-using TMS.Application.Models.DTOs.Task;
 using TMS.Infrastructure.DataAccess.DataModels;
+
+using Task = TMS.Infrastructure.DataAccess.DataModels.Task;
 
 namespace TMS.Application.Services
 {
@@ -16,13 +18,20 @@ namespace TMS.Application.Services
     /// </summary>
     public class TaskService : ITaskService<TaskDto, TaskCreateDto>
     {
-        private readonly ITaskRepository<Infrastructure.DataAccess.DataModels.Task> _taskRepository;
+        private readonly ITaskRepository<Task> _taskRepository;
         private readonly IAuditableCommandRepository<Comment> _commentCommandRepository;
         private readonly IAuditableQueryRepository<Comment> _commentQueryRepository;
         private readonly ILogger<TaskService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TaskService"/> class.
+        /// </summary>
+        /// <param name="taskRepository">The repository for accessing task data.</param>
+        /// <param name="commentCommandRepository">The repository for performing auditable comment commands (e.g., insert, update).</param>
+        /// <param name="commentQueryRepository">The repository for performing auditable comment queries (e.g., get by id).</param>
+        /// <param name="logger">The logger for logging task service events.</param>
         public TaskService(
-            ITaskRepository<Infrastructure.DataAccess.DataModels.Task> taskRepository,
+            ITaskRepository<Task> taskRepository,
             IAuditableCommandRepository<Comment> commentCommandRepository,
             IAuditableQueryRepository<Comment> commentQueryRepository,
             ILogger<TaskService> logger)
@@ -33,6 +42,7 @@ namespace TMS.Application.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<TaskDto> CreateAsync(TaskCreateDto createDto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(createDto);
@@ -47,6 +57,7 @@ namespace TMS.Application.Services
             return entity.ToTaskDto();
         }
 
+        /// <inheritdoc/>
         public async Task<TaskDto> UpdateAsync(TaskDto dto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -77,6 +88,7 @@ namespace TMS.Application.Services
             return entity.ToTaskDto();
         }
 
+        /// <inheritdoc/>
         public async Task<TaskDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var entity = await _taskRepository.GetByIdAsync(id, cancellationToken);
@@ -88,12 +100,14 @@ namespace TMS.Application.Services
             return entity.ToTaskDto();
         }
 
+        /// <inheritdoc/>
         public async System.Threading.Tasks.Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             await _taskRepository.DeleteAsync(id, cancellationToken);
             _logger.LogInformation("Task with id {Id} deleted", id);
         }
 
+        /// <inheritdoc/>
         public async Task<CommentDto> AddCommentAsync(Guid taskId, CommentCreateDto dto, CancellationToken cancellationToken = default)
         {
             var comment = new Comment
@@ -115,10 +129,11 @@ namespace TMS.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<IEnumerable<CommentDto>> GetCommentsAsync(Guid taskId, CancellationToken cancellationToken = default)
         {
             var comments = await _commentQueryRepository.GetAllAsync(cancellationToken);
-            return comments
+            return [.. comments
                 .Where(c => c.TaskId == taskId && c.DeleteDate == null)
                 .Select(c => new CommentDto
                 {
@@ -129,10 +144,10 @@ namespace TMS.Application.Services
                     CreationDate = c.CreationDate,
                     UpdateDate = c.UpdateDate,
                     DeleteDate = c.DeleteDate
-                })
-                .ToList();
+                })];
         }
 
+        /// <inheritdoc/>
         public async Task<CommentDto> UpdateCommentAsync(Guid taskId, Guid commentId, CommentDto dto, CancellationToken cancellationToken = default)
         {
             var comment = await _commentQueryRepository.GetByIdAsync(commentId, cancellationToken);
@@ -156,6 +171,7 @@ namespace TMS.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async System.Threading.Tasks.Task DeleteCommentAsync(Guid taskId, Guid commentId, CancellationToken cancellationToken = default)
         {
             var comment = await _commentQueryRepository.GetByIdAsync(commentId, cancellationToken);

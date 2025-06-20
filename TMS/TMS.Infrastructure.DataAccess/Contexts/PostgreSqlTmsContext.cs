@@ -3,37 +3,128 @@ using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Infrastructure.DataAccess.Contexts
 {
+    /// <summary>
+    /// Represents the Entity Framework Core context for the TMS (Task Management System) application,
+    /// configured to use a PostgreSQL database.
+    /// </summary>
     public class PostgreSqlTmsContext : DbContext
     {
+        /// <summary>
+        /// Gets or sets the DbSet for Company entities.
+        /// </summary>
         public DbSet<Company> Companies { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for Board entities.
+        /// </summary>
         public DbSet<Board> Boards { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for User entities.
+        /// </summary>
         public DbSet<User> Users { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for BoardUser entities.
+        /// </summary>
         public DbSet<BoardUser> BoardUsers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for BoardUserRole entities.
+        /// </summary>
         public DbSet<BoardUserRole> BoardUserRoles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for Column entities.
+        /// </summary>
         public DbSet<Column> Columns { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for Comment entities.
+        /// </summary>
         public DbSet<Comment> Comments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for Credential entities.
+        /// </summary>
         public DbSet<Credential> Credentials { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for CredentialHistory entities.
+        /// </summary>
         public DbSet<CredentialHistory> CredentialHistories { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for NotificationSetting entities.
+        /// </summary>
         public DbSet<NotificationSetting> NotificationSettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for Permission entities.
+        /// </summary>
         public DbSet<Permission> Permissions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for Role entities.
+        /// </summary>
         public DbSet<Role> Roles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for RolePermission entities.
+        /// </summary>
         public DbSet<RolePermission> RolePermissions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for Task entities.
+        /// </summary>
         public DbSet<DataModels.Task> Tasks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for TaskType entities.
+        /// </summary>
         public DbSet<TaskType> TaskTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for TelegramAccount entities.
+        /// </summary>
         public DbSet<TelegramAccount> TelegramAccounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for Department entities.
+        /// </summary>
         public DbSet<Department> Departments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for UserDepartment entities.
+        /// </summary>
         public DbSet<UserDepartment> UserDepartments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for UserVerification entities.
+        /// </summary>
         public DbSet<UserVerification> UserVerifications { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet for RegistrationVerification entities.
+        /// </summary>
         public DbSet<RegistrationVerification> RegistrationVerifications { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PostgreSqlTmsContext"/> class.
+        /// </summary>
+        /// <param name="options">The options to be used by the DbContext.</param>
         public PostgreSqlTmsContext(DbContextOptions<PostgreSqlTmsContext> options) : base(options)
         {
-
         }
 
+        /// <summary>
+        /// Override this method to further configure the model that was discovered by convention from the entity types
+        /// exposed in <see cref="DbSet{TEntity}"/> properties on your derived context. The resulting model may be cached
+        /// and re-used for subsequent instances of your derived context.
+        /// </summary>
+        /// <param name="modelBuilder">The builder being used to construct the model for this context.</param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
         }
     }
 }

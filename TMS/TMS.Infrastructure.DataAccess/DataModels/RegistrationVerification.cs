@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using TMS.Abstractions.Models.Interfaces;
+using TMS.Abstractions.Models.Contracts;
 
 namespace TMS.Infrastructure.DataAccess.DataModels
 {

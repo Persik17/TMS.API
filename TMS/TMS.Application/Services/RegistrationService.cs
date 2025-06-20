@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Services;
-using TMS.Application.Models.DTOs.Registration;
+using TMS.Abstractions.Models.DTOs.Registration;
 using TMS.Contracts.Events;
 using TMS.Infrastructure.DataAccess.DataModels;
 
@@ -10,12 +10,18 @@ namespace TMS.Application.Services
     /// <summary>
     /// Service for registering new users and initiating verification.
     /// </summary>
-    public class RegistrationService : IRegistrationService<RegistrationDto, RegistrationResultDto>
+    public class RegistrationService : IRegistrationService
     {
         private readonly ICommandRepository<RegistrationVerification> _commandRepository;
         private readonly INotifyService _notifyService;
         private readonly ILogger<RegistrationService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrationService"/> class.
+        /// </summary>
+        /// <param name="commandRepository">The repository for performing registration verification commands (e.g., insert).</param>
+        /// <param name="notifyService">The service for sending notifications (e.g., email, SMS, Telegram).</param>
+        /// <param name="logger">The logger for logging registration service events.</param>
         public RegistrationService(
             ICommandRepository<RegistrationVerification> commandRepository,
             INotifyService notifyService,
@@ -26,6 +32,7 @@ namespace TMS.Application.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<RegistrationResultDto> RegisterAsync(RegistrationDto dto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);

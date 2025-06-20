@@ -9,14 +9,19 @@ using TMS.Infrastructure.DataAccess.DataModels;
 namespace TMS.Application.Services
 {
     /// <summary>
-    /// Service for managing Board entities.
-    /// Provides CRUD operations and uses logging for diagnostics and monitoring.
+    /// Provides a service for managing boards.
+    /// Implements operations for creating, retrieving, updating and deleting boards.
     /// </summary>
     public class BoardService : IBoardService<BoardDto, BoardCreateDto>
     {
         private readonly IBoardRepository<Board> _boardRepository;
         private readonly ILogger<BoardService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BoardService"/> class.
+        /// </summary>
+        /// <param name="boardRepository">The repository for accessing board data.</param>
+        /// <param name="logger">The logger for logging board service events.</param>
         public BoardService(
             IBoardRepository<Board> boardRepository,
             ILogger<BoardService> logger)
@@ -25,6 +30,7 @@ namespace TMS.Application.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<BoardDto> CreateAsync(BoardCreateDto createDto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(createDto);
@@ -42,6 +48,7 @@ namespace TMS.Application.Services
             return createdBoard.ToBoardDto();
         }
 
+        /// <inheritdoc/>
         public async Task<BoardDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             if (id == Guid.Empty)
@@ -52,11 +59,15 @@ namespace TMS.Application.Services
 
             var board = await _boardRepository.GetByIdAsync(id, cancellationToken);
             if (board == null)
+            {
                 _logger.LogWarning("Board with id {Id} not found", id);
+                return null; // Consider returning null instead of throwing an exception if the board is not found
+            }
 
-            return board?.ToBoardDto();
+            return board.ToBoardDto(); // Use non-nullable assertion
         }
 
+        /// <inheritdoc/>
         public async Task<BoardDto> UpdateAsync(BoardDto dto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -88,6 +99,7 @@ namespace TMS.Application.Services
             return dto;
         }
 
+        /// <inheritdoc/>
         public async System.Threading.Tasks.Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             if (id == Guid.Empty)

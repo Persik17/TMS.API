@@ -1,4 +1,4 @@
-﻿using TMS.Application.Models.DTOs.Role;
+﻿using TMS.Application.DTOs.Role;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Extensions

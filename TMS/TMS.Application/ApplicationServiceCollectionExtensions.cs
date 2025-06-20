@@ -1,28 +1,31 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
 using TMS.Abstractions.Interfaces.Security;
 using TMS.Abstractions.Interfaces.Services;
 using TMS.Application.DTOs.Board;
-using TMS.Application.Models.DTOs.Authentication;
-using TMS.Application.Models.DTOs.Column;
-using TMS.Application.Models.DTOs.Company;
-using TMS.Application.Models.DTOs.Department;
-using TMS.Application.Models.DTOs.NotificationSetting;
-using TMS.Application.Models.DTOs.Permission;
-using TMS.Application.Models.DTOs.Registration;
-using TMS.Application.Models.DTOs.Role;
-using TMS.Application.Models.DTOs.Task;
-using TMS.Application.Models.DTOs.TaskType;
-using TMS.Application.Models.DTOs.User;
+using TMS.Application.DTOs.Column;
+using TMS.Application.DTOs.Company;
+using TMS.Application.DTOs.Department;
+using TMS.Application.DTOs.NotificationSetting;
+using TMS.Application.DTOs.Permission;
+using TMS.Application.DTOs.Role;
+using TMS.Application.DTOs.Task;
+using TMS.Application.DTOs.TaskType;
+using TMS.Application.DTOs.User;
 using TMS.Application.Services;
 using TMS.Application.Utils;
-using TMS.Infrastructure.DataAccess.DataModels;
-using TMS.Infrastructure.DataAccess.Repositories;
 
 namespace TMS.Application
 {
+    /// <summary>
+    /// Extension methods for <see cref="IServiceCollection"/> to register application-related services.
+    /// </summary>
     public static class ApplicationServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds application services to the service collection.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+        /// <returns>The same service collection so that multiple calls can be chained.</returns>
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             services.AddScoped<IBoardService<BoardDto, BoardCreateDto>, BoardService>();
@@ -35,12 +38,10 @@ namespace TMS.Application
             services.AddScoped<ITaskService<TaskDto, TaskCreateDto>, TaskService>();
             services.AddScoped<ITaskTypeService<TaskTypeDto, TaskTypeCreateDto>, TaskTypeService>();
             services.AddScoped<IUserService<UserDto, UserCreateDto>, UserService>();
-            services.AddScoped<IAuditableCommandRepository<TelegramAccount>, TelegramAccountRepository>();
-            services.AddScoped<IAuditableQueryRepository<TelegramAccount>, TelegramAccountRepository>();
 
-            services.AddScoped<IAuthenticationService<AuthenticationDto, AuthenticationResultDto>, AuthenticationService>();
-            services.AddScoped<IRegistrationService<RegistrationDto, RegistrationResultDto>, RegistrationService>();
-            services.AddScoped<IVerificationService<RegistrationConfirmationDto, ConfirmationResultDto>, VerificationService>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IRegistrationService, RegistrationService>();
+            services.AddScoped<IVerificationService, VerificationService>();
 
             services.AddScoped<INotifyService, NotifyService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();

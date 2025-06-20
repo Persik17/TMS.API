@@ -4,7 +4,7 @@ using TMS.Abstractions.Interfaces.Security;
 namespace TMS.Application.Utils
 {
     /// <summary>
-    /// Password hasher using PBKDF2 and external salt.
+    /// Password hasher using PBKDF2 with a configurable number of iterations and a 256-bit key size.
     /// </summary>
     public class PasswordHasher : IPasswordHasher
     {
@@ -12,11 +12,13 @@ namespace TMS.Application.Utils
         private const int Iterations = 100_000;
         private static readonly HashAlgorithmName HashAlgorithm = HashAlgorithmName.SHA256;
 
+        /// <inheritdoc/>
         public string GenerateSalt()
         {
             return Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
         }
 
+        /// <inheritdoc/>
         public string Hash(string password, string salt)
         {
             var saltBytes = Convert.FromBase64String(salt);
@@ -29,6 +31,7 @@ namespace TMS.Application.Utils
             return Convert.ToBase64String(key);
         }
 
+        /// <inheritdoc/>
         public bool Verify(string hash, string password, string salt)
         {
             var hashToCheck = Hash(password, salt);

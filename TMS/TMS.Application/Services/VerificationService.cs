@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Exceptions;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Services;
-using TMS.Application.Models.DTOs.Registration;
+using TMS.Abstractions.Models.DTOs.Registration;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Services
@@ -10,12 +10,18 @@ namespace TMS.Application.Services
     /// <summary>
     /// Service for confirming registration by code.
     /// </summary>
-    public class VerificationService : IVerificationService<RegistrationConfirmationDto, ConfirmationResultDto>
+    public class VerificationService : IVerificationService
     {
         private readonly ICommandRepository<RegistrationVerification> _commandRepository;
         private readonly IQueryRepository<RegistrationVerification> _queryRepository;
         private readonly ILogger<VerificationService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VerificationService"/> class.
+        /// </summary>
+        /// <param name="commandRepository">The repository for performing registration verification commands (e.g., insert, update).</param>
+        /// <param name="queryRepository">The repository for performing registration verification queries (e.g., get by id).</param>
+        /// <param name="logger">The logger for logging verification service events.</param>
         public VerificationService(
             ICommandRepository<RegistrationVerification> commandRepository,
             IQueryRepository<RegistrationVerification> queryRepository,
@@ -26,6 +32,7 @@ namespace TMS.Application.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<ConfirmationResultDto> ConfirmAsync(RegistrationConfirmationDto dto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);

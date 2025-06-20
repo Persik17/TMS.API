@@ -3,24 +3,29 @@ using TMS.Abstractions.Exceptions;
 using TMS.Abstractions.Interfaces.Repositories;
 using TMS.Abstractions.Interfaces.Security;
 using TMS.Abstractions.Interfaces.Services;
-using TMS.Application.Models.DTOs.Authentication;
+using TMS.Abstractions.Models.DTOs.Authentication;
 using TMS.Infrastructure.DataAccess.DataModels;
-
-using Task = System.Threading.Tasks.Task;
 
 namespace TMS.Application.Services
 {
     /// <summary>
     /// Service for authenticating users.
-    /// Provides login logic, logging, and error handling.
+    /// Provides login logic, including user lookup, password verification, and token generation.
     /// </summary>
-    public class AuthenticationService : IAuthenticationService<AuthenticationDto, AuthenticationResultDto>
+    public class AuthenticationService : IAuthenticationService
     {
         private readonly IUserRepository<User> _userRepository;
         private readonly ICredentialRepository<Credential> _credentialRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly ILogger<AuthenticationService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthenticationService"/> class.
+        /// </summary>
+        /// <param name="userRepository">The repository for accessing user data.</param>
+        /// <param name="credentialRepository">The repository for accessing user credentials.</param>
+        /// <param name="passwordHasher">The password hashing service.</param>
+        /// <param name="logger">The logger for logging authentication events.</param>
         public AuthenticationService(
             IUserRepository<User> userRepository,
             ICredentialRepository<Credential> credentialRepository,
@@ -29,6 +34,8 @@ namespace TMS.Application.Services
         )
         {
             _userRepository = userRepository;
+            _credentialRepository = credentialRepository;
+            _passwordHasher = passwordHasher;
             _logger = logger;
         }
 
@@ -39,7 +46,7 @@ namespace TMS.Application.Services
 
             _logger.LogInformation("Attempting to authenticate user with email: {Email}", dto.Email);
 
-            // Пример проверки (замени на свою логику поиска пользователя и проверки пароля)
+            // Example check (replace with your user lookup and password verification logic)
             var user = await _userRepository.FindByEmailAsync(dto.Email, cancellationToken);
             if (user == null)
             {
@@ -54,17 +61,17 @@ namespace TMS.Application.Services
                 throw new AuthenticationFailedException("Invalid email or password.");
             }
 
-            // Пример успешной аутентификации (замени на свою логику генерации токена)
+            // Example successful authentication (replace with your token generation logic)
             var result = new AuthenticationResultDto
             {
                 Success = true,
-                Token = "jwt-token", // Генерируй реальный токен
+                Token = "jwt-token", // Generate a real token
                 Error = null
             };
 
             _logger.LogInformation("User with email {Email} authenticated successfully", dto.Email);
 
-            return await Task.FromResult(result);
+            return result; // Removed unnecessary Task.FromResult
         }
     }
 }

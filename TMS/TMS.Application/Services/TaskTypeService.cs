@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Exceptions;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Services;
+using TMS.Application.DTOs.TaskType;
 using TMS.Application.Extensions;
-using TMS.Application.Models.DTOs.TaskType;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Services
@@ -18,6 +18,12 @@ namespace TMS.Application.Services
         private readonly IAuditableQueryRepository<TaskType> _queryRepository;
         private readonly ILogger<TaskTypeService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TaskTypeService"/> class.
+        /// </summary>
+        /// <param name="commandRepository">The repository for performing auditable task type commands (e.g., insert, update).</param>
+        /// <param name="queryRepository">The repository for performing auditable task type queries (e.g., get by id).</param>
+        /// <param name="logger">The logger for logging task type service events.</param>
         public TaskTypeService(
             IAuditableCommandRepository<TaskType> commandRepository,
             IAuditableQueryRepository<TaskType> queryRepository,
@@ -28,6 +34,7 @@ namespace TMS.Application.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<TaskTypeDto> CreateAsync(TaskTypeCreateDto createDto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(createDto);
@@ -42,6 +49,7 @@ namespace TMS.Application.Services
             return entity.ToTaskTypeDto();
         }
 
+        /// <inheritdoc/>
         public async Task<TaskTypeDto> UpdateAsync(TaskTypeDto dto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -60,6 +68,7 @@ namespace TMS.Application.Services
             return entity.ToTaskTypeDto();
         }
 
+        /// <inheritdoc/>
         public async Task<TaskTypeDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var entity = await _queryRepository.GetByIdAsync(id, cancellationToken);
@@ -71,6 +80,7 @@ namespace TMS.Application.Services
             return entity.ToTaskTypeDto();
         }
 
+        /// <inheritdoc/>
         public async System.Threading.Tasks.Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             await _commandRepository.DeleteAsync(id, cancellationToken);

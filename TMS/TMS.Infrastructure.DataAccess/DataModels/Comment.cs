@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using TMS.Abstractions.Models.Interfaces;
+using TMS.Abstractions.Models.Contracts;
 
 namespace TMS.Infrastructure.DataAccess.DataModels
 {

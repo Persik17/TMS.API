@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Exceptions;
 using TMS.Abstractions.Interfaces.Repositories;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Services;
-using TMS.Abstractions.Models.DTOs;
+using TMS.Abstractions.Models.DTOs.User;
+using TMS.Application.DTOs.User;
 using TMS.Application.Extensions;
-using TMS.Application.Models.DTOs.User;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 using Task = System.Threading.Tasks.Task;
@@ -22,6 +22,12 @@ namespace TMS.Application.Services
         private readonly IAuditableCommandRepository<TelegramAccount> _telegramAccountCommandRepository;
         private readonly ILogger<UserService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserService"/> class.
+        /// </summary>
+        /// <param name="userRepository">The repository for accessing user data.</param>
+        /// <param name="telegramAccountCommandRepository">The repository for performing auditable Telegram account commands (e.g., insert, update).</param>
+        /// <param name="logger">The logger for logging user service events.</param>
         public UserService(
             IUserRepository<User> userRepository,
             IAuditableCommandRepository<TelegramAccount> telegramAccountCommandRepository,
@@ -32,6 +38,7 @@ namespace TMS.Application.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<UserDto> CreateAsync(UserCreateDto createDto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(createDto);
@@ -50,6 +57,7 @@ namespace TMS.Application.Services
             return createdUser.ToUserDto();
         }
 
+        /// <inheritdoc/>
         public async Task<UserDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             if (id == Guid.Empty)
@@ -65,6 +73,7 @@ namespace TMS.Application.Services
             return user?.ToUserDto();
         }
 
+        /// <inheritdoc/>
         public async Task<UserDto> UpdateAsync(UserDto dto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -103,6 +112,7 @@ namespace TMS.Application.Services
             return dto;
         }
 
+        /// <inheritdoc/>
         public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             if (id == Guid.Empty)
@@ -116,6 +126,7 @@ namespace TMS.Application.Services
             _logger.LogInformation("User with id {Id} deleted", id);
         }
 
+        /// <inheritdoc/>
         public async Task LinkTelegramAccountAsync(Guid userId, TelegramAccountCreateDto dto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -146,6 +157,7 @@ namespace TMS.Application.Services
             _logger.LogInformation("TelegramAccount {TelegramId} linked to user {UserId}", telegramAccount.Id, userId);
         }
 
+        /// <inheritdoc/>
         public async Task UnlinkTelegramAccountAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             var user = await _userRepository.GetByIdAsync(userId, cancellationToken)

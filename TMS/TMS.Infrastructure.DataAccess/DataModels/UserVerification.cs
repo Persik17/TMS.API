@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using TMS.Abstractions.Models.Interfaces;
+using TMS.Abstractions.Models.Contracts;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 public class UserVerification : IEntity

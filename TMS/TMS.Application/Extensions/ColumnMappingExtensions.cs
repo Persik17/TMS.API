@@ -1,4 +1,4 @@
-﻿using TMS.Application.Models.DTOs.Column;
+﻿using TMS.Application.DTOs.Column;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Extensions

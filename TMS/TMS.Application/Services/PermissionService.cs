@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Exceptions;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Services;
+using TMS.Application.DTOs.Permission;
 using TMS.Application.Extensions;
-using TMS.Application.Models.DTOs.Permission;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Services
@@ -18,6 +18,12 @@ namespace TMS.Application.Services
         private readonly IAuditableQueryRepository<Permission> _queryRepository;
         private readonly ILogger<PermissionService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PermissionService"/> class.
+        /// </summary>
+        /// <param name="commandRepository">The repository for performing auditable permission commands (e.g., insert, update).</param>
+        /// <param name="queryRepository">The repository for performing auditable permission queries (e.g., get by id).</param>
+        /// <param name="logger">The logger for logging permission service events.</param>
         public PermissionService(
             IAuditableCommandRepository<Permission> commandRepository,
             IAuditableQueryRepository<Permission> queryRepository,
@@ -28,6 +34,7 @@ namespace TMS.Application.Services
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public async Task<PermissionDto> CreateAsync(PermissionCreateDto createDto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(createDto);
@@ -42,6 +49,7 @@ namespace TMS.Application.Services
             return entity.ToPermissionDto();
         }
 
+        /// <inheritdoc/>
         public async Task<PermissionDto> UpdateAsync(PermissionDto dto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -60,6 +68,7 @@ namespace TMS.Application.Services
             return entity.ToPermissionDto();
         }
 
+        /// <inheritdoc/>
         public async Task<PermissionDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var entity = await _queryRepository.GetByIdAsync(id, cancellationToken);
@@ -71,6 +80,7 @@ namespace TMS.Application.Services
             return entity.ToPermissionDto();
         }
 
+        /// <inheritdoc/>
         public async System.Threading.Tasks.Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             if (id == Guid.Empty)

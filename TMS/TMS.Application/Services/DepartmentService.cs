@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Exceptions;
-using TMS.Abstractions.Interfaces.Repositories.BaseInterfaces;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Services;
+using TMS.Application.DTOs.Department;
 using TMS.Application.Extensions;
-using TMS.Application.Models.DTOs.Department;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 using Task = System.Threading.Tasks.Task;
@@ -23,9 +23,9 @@ namespace TMS.Application.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="DepartmentService"/> class.
         /// </summary>
-        /// <param name="commandRepository">Repository for write operations.</param>
-        /// <param name="queryRepository">Repository for read operations.</param>
-        /// <param name="logger">Logger instance for diagnostics.</param>
+        /// <param name="commandRepository">The repository for performing auditable department commands (e.g., insert, update).</param>
+        /// <param name="queryRepository">The repository for performing auditable department queries (e.g., get by id).</param>
+        /// <param name="logger">The logger for logging department service events.</param>
         public DepartmentService(
             IAuditableCommandRepository<Department> commandRepository,
             IAuditableQueryRepository<Department> queryRepository,
