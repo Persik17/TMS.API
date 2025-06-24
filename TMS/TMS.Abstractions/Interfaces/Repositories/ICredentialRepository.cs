@@ -18,5 +18,13 @@ namespace TMS.Abstractions.Interfaces.Repositories
         /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
         /// <returns>A task that represents the asynchronous get operation. The task result contains the credential, or <c>null</c> if not found.</returns>
         Task<TEntity> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets credential by login asynchronously.
+        /// </summary>
+        /// <param name="login">The login (e.g., username or email) to retrieve the credential for.</param>
+        /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+        /// <returns>A task that represents the asynchronous get operation. The task result contains the credential, or <c>null</c> if not found.</returns>
+        Task<TEntity> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
     }
 }

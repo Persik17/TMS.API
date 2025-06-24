@@ -18,8 +18,8 @@ namespace TMS.Abstractions.Models.DTOs.Registration
         public string Password { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of verification required for registration.
+        /// Gets or sets the notification sending type (e.g., email, SMS).
         /// </summary>
-        public VerificationType Type { get; set; }
+        public NotificationType Type { get; set; }
     }
 }

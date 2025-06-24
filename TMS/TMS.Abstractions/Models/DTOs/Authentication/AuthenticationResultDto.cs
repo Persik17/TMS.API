@@ -5,6 +5,7 @@
     /// </summary>
     public class AuthenticationResultDto
     {
+        public Guid VerificationId { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether the authentication was successful.
         /// </summary>

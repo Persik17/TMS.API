@@ -1,4 +1,5 @@
-﻿using TMS.Abstractions.Models.DTOs.Registration;
+﻿using TMS.Abstractions.Models.DTOs.Authentication;
+using TMS.Abstractions.Models.DTOs.Registration;
 
 namespace TMS.Abstractions.Interfaces.Services
 {
@@ -17,6 +18,18 @@ namespace TMS.Abstractions.Interfaces.Services
         /// The confirmation process may succeed, fail due to an invalid code, or fail due to other errors (e.g., code expired).
         /// The <see cref="ConfirmationResultDto"/> contains information about the success status and any potential errors.
         /// </remarks>
-        Task<ConfirmationResultDto> ConfirmAsync(RegistrationConfirmationDto dto, CancellationToken cancellationToken = default);
+        Task<ConfirmationResultDto> ConfirmRegistrationAsync(RegistrationConfirmationDto dto, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Confirms login by code asynchronously.
+        /// </summary>
+        /// <param name="dto">The DTO containing authentication confirmation data.</param>
+        /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+        /// <returns>A task that represents the asynchronous confirmation operation. The task result contains the confirmation result.</returns>
+        /// <remarks>
+        /// The confirmation process may succeed, fail due to an invalid code, or fail due to other errors (e.g., code expired).
+        /// The <see cref="ConfirmationResultDto"/> contains information about the success status and any potential errors.
+        /// </remarks>
+        Task<ConfirmationResultDto> ConfirmLoginAsync(AuthenticationConfirmationDto dto, CancellationToken cancellationToken = default);
     }
 }
