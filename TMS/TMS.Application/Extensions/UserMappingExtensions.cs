@@ -1,4 +1,5 @@
-﻿using TMS.Application.DTOs.User;
+﻿using TMS.Abstractions.Models.DTOs.User;
+using TMS.Application.DTOs.User;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Extensions
@@ -35,7 +36,7 @@ namespace TMS.Application.Extensions
                 Language = user.Language,
                 Phone = user.Phone,
                 Status = user.Status,
-                NotificationSettingsId = user.NotificationSettingsId,
+                NotificationSettingsId = (Guid)user.NotificationSettingsId,
                 RegistrationDate = user.RegistrationDate,
                 LastLoginDate = user.LastLoginDate,
                 CreationDate = user.CreationDate,

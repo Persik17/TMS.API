@@ -3,7 +3,7 @@
     public class RegistrationViewModel
     {
         public string Target { get; set; }
-        public int Type { get; set; } // Email/Phone/Telegram
+        public int Type { get; set; } // Email
         public string Password { get; set; }
     }
 }

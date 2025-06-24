@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using TMS.Abstractions.Interfaces.Factories;
 using TMS.Abstractions.Interfaces.Security;
 using TMS.Abstractions.Interfaces.Services;
+using TMS.Abstractions.Models.DTOs.User;
 using TMS.Application.DTOs.Board;
 using TMS.Application.DTOs.Column;
 using TMS.Application.DTOs.Company;
@@ -12,6 +14,7 @@ using TMS.Application.DTOs.Task;
 using TMS.Application.DTOs.TaskType;
 using TMS.Application.DTOs.User;
 using TMS.Application.Services;
+using TMS.Application.Services.Factories;
 using TMS.Application.Utils;
 
 namespace TMS.Application
@@ -45,6 +48,8 @@ namespace TMS.Application
 
             services.AddScoped<INotifyService, NotifyService>();
             services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+            services.AddScoped<IUserFactory, UserFactory>();
 
             return services;
         }

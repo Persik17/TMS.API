@@ -12,7 +12,7 @@ namespace TMS.Application.Services
     /// </summary>
     public class RegistrationService : IRegistrationService
     {
-        private readonly ICommandRepository<RegistrationVerification> _commandRepository;
+        private readonly ICommandRepository<UserVerification> _commandRepository;
         private readonly INotifyService _notifyService;
         private readonly ILogger<RegistrationService> _logger;
 
@@ -23,13 +23,13 @@ namespace TMS.Application.Services
         /// <param name="notifyService">The service for sending notifications (e.g., email, SMS, Telegram).</param>
         /// <param name="logger">The logger for logging registration service events.</param>
         public RegistrationService(
-            ICommandRepository<RegistrationVerification> commandRepository,
+            ICommandRepository<UserVerification> commandRepository,
             INotifyService notifyService,
             ILogger<RegistrationService> logger)
         {
-            _commandRepository = commandRepository;
-            _notifyService = notifyService;
-            _logger = logger;
+            _commandRepository = commandRepository ?? throw new ArgumentNullException(nameof(commandRepository));
+            _notifyService = notifyService ?? throw new ArgumentNullException(nameof(notifyService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <inheritdoc/>
@@ -37,13 +37,11 @@ namespace TMS.Application.Services
         {
             ArgumentNullException.ThrowIfNull(dto);
 
-            // Генерируем код подтверждения
             var code = new Random().Next(100000, 999999).ToString();
-            var verification = new RegistrationVerification
+            var verification = new UserVerification
             {
                 Id = Guid.NewGuid(),
-                Target = dto.Target,
-                Type = (int)dto.Type,
+                Email = dto.Target,
                 Code = code,
                 Expiration = DateTime.UtcNow.AddMinutes(10),
                 IsUsed = false,
@@ -55,10 +53,10 @@ namespace TMS.Application.Services
             await _notifyService.PublishAsync(new RegistrationVerificationCreatedEvent
             {
                 VerificationId = verification.Id,
-                Target = verification.Target,
-                Type = verification.Type,
+                Target = verification.Email,
                 Code = verification.Code,
-                Expiration = verification.Expiration
+                Expiration = verification.Expiration,
+                Message = ""
             }, cancellationToken);
 
             _logger.LogInformation("Registration verification created for {Target} ({Type})", dto.Target, dto.Type);

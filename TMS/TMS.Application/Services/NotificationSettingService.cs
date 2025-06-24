@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Exceptions;
+using TMS.Abstractions.Interfaces.Repositories;
 using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Services;
 using TMS.Application.DTOs.NotificationSetting;
@@ -14,8 +15,7 @@ namespace TMS.Application.Services
     /// </summary>
     public class NotificationSettingService : INotificationSettingService<NotificationSettingDto, NotificationSettingCreateDto>
     {
-        private readonly ICommandRepository<NotificationSetting> _commandRepository;
-        private readonly IQueryRepository<NotificationSetting> _queryRepository;
+        private readonly INotificationSettingRepository<NotificationSetting> _settingRepository;
         private readonly ILogger<NotificationSettingService> _logger;
 
         /// <summary>
@@ -25,12 +25,10 @@ namespace TMS.Application.Services
         /// <param name="queryRepository">The repository for performing notification setting queries (e.g., get by id).</param>
         /// <param name="logger">The logger for logging notification setting service events.</param>
         public NotificationSettingService(
-            ICommandRepository<NotificationSetting> commandRepository,
-            IQueryRepository<NotificationSetting> queryRepository,
+            INotificationSettingRepository<NotificationSetting> settingRepository,
             ILogger<NotificationSettingService> logger)
         {
-            _commandRepository = commandRepository;
-            _queryRepository = queryRepository;
+            _settingRepository = settingRepository;
             _logger = logger;
         }
 
@@ -42,7 +40,7 @@ namespace TMS.Application.Services
             _logger.LogInformation("Creating new notification setting");
 
             var entity = createDto.ToNotificationSetting();
-            await _commandRepository.InsertAsync(entity, cancellationToken);
+            await _settingRepository.InsertAsync(entity, cancellationToken);
 
             _logger.LogInformation("Notification setting created with id: {Id}", entity.Id);
 
@@ -55,14 +53,14 @@ namespace TMS.Application.Services
         {
             ArgumentNullException.ThrowIfNull(dto);
 
-            var entity = await _queryRepository.GetByIdAsync(dto.Id, cancellationToken)
+            var entity = await _settingRepository.GetByIdAsync(dto.Id, cancellationToken)
                 ?? throw new NotFoundException(typeof(NotificationSetting));
 
             entity.EmailNotificationsEnabled = dto.EmailNotificationsEnabled;
             entity.PushNotificationsEnabled = dto.PushNotificationsEnabled;
             entity.TelegramNotificationsEnabled = dto.TelegramNotificationsEnabled;
 
-            await _commandRepository.UpdateAsync(entity, cancellationToken);
+            await _settingRepository.UpdateAsync(entity, cancellationToken);
 
             _logger.LogInformation("Notification setting with id {Id} updated", dto.Id);
 
@@ -72,7 +70,7 @@ namespace TMS.Application.Services
         /// <inheritdoc/>
         public async Task<NotificationSettingDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var entity = await _queryRepository.GetByIdAsync(id, cancellationToken);
+            var entity = await _settingRepository.GetByIdAsync(id, cancellationToken);
             if (entity == null)
             {
                 _logger.LogWarning("Notification setting with id {Id} not found", id);

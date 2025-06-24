@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Exceptions;
 using TMS.Abstractions.Interfaces.Repositories;
+using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
 using TMS.Abstractions.Interfaces.Security;
 using TMS.Abstractions.Interfaces.Services;
 using TMS.Abstractions.Models.DTOs.Authentication;
+using TMS.Contracts.Events;
 using TMS.Infrastructure.DataAccess.DataModels;
 
 namespace TMS.Application.Services
@@ -14,29 +16,32 @@ namespace TMS.Application.Services
     /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly IUserRepository<User> _userRepository;
         private readonly ICredentialRepository<Credential> _credentialRepository;
+        private readonly ICommandRepository<UserVerification> _commandRepository;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly INotifyService _notifyService;
         private readonly ILogger<AuthenticationService> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationService"/> class.
         /// </summary>
-        /// <param name="userRepository">The repository for accessing user data.</param>
         /// <param name="credentialRepository">The repository for accessing user credentials.</param>
+        /// <param name="commandRepository">The repository for managing user verification entities.</param>
         /// <param name="passwordHasher">The password hashing service.</param>
+        /// <param name="notifyService">The notification publishing service.</param>
         /// <param name="logger">The logger for logging authentication events.</param>
         public AuthenticationService(
-            IUserRepository<User> userRepository,
             ICredentialRepository<Credential> credentialRepository,
+            ICommandRepository<UserVerification> commandRepository,
             IPasswordHasher passwordHasher,
-            ILogger<AuthenticationService> logger
-        )
+            INotifyService notifyService,
+            ILogger<AuthenticationService> logger)
         {
-            _userRepository = userRepository;
-            _credentialRepository = credentialRepository;
-            _passwordHasher = passwordHasher;
-            _logger = logger;
+            _credentialRepository = credentialRepository ?? throw new ArgumentNullException(nameof(credentialRepository));
+            _commandRepository = commandRepository ?? throw new ArgumentNullException(nameof(commandRepository));
+            _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
+            _notifyService = notifyService ?? throw new ArgumentNullException(nameof(notifyService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <inheritdoc/>
@@ -46,32 +51,49 @@ namespace TMS.Application.Services
 
             _logger.LogInformation("Attempting to authenticate user with email: {Email}", dto.Email);
 
-            // Example check (replace with your user lookup and password verification logic)
-            var user = await _userRepository.FindByEmailAsync(dto.Email, cancellationToken);
-            if (user == null)
+            var credential = await _credentialRepository.GetByEmailAsync(dto.Email, cancellationToken);
+            if (credential == null)
             {
                 _logger.LogWarning("Authentication failed for email: {Email}", dto.Email);
-                throw new NotFoundException(typeof(User));
+                throw new NotFoundException(typeof(Credential));
             }
 
-            var credential = await _credentialRepository.GetByUserIdAsync(user.Id, cancellationToken);
-            if (credential == null || !_passwordHasher.Verify(credential.PasswordHash, dto.Password, credential.PasswordSalt))
+            if (!_passwordHasher.Verify(credential.PasswordHash, dto.Password, credential.PasswordSalt))
             {
                 _logger.LogWarning("Authentication failed for email: {Email}", dto.Email);
                 throw new AuthenticationFailedException("Invalid email or password.");
             }
 
-            // Example successful authentication (replace with your token generation logic)
-            var result = new AuthenticationResultDto
+            _logger.LogInformation("Creating a verification request for User {Email}", dto.Email);
+
+            var code = new Random().Next(100000, 999999).ToString();
+            var verification = new UserVerification
             {
-                Success = true,
-                Token = "jwt-token", // Generate a real token
-                Error = null
+                Id = Guid.NewGuid(),
+                Email = dto.Email,
+                Code = code,
+                Expiration = DateTime.UtcNow.AddMinutes(10),
+                IsUsed = false,
+                CreatedAt = DateTime.UtcNow
             };
 
-            _logger.LogInformation("User with email {Email} authenticated successfully", dto.Email);
+            await _commandRepository.InsertAsync(verification, cancellationToken);
 
-            return result; // Removed unnecessary Task.FromResult
+            await _notifyService.PublishAsync(new RegistrationVerificationCreatedEvent
+            {
+                VerificationId = verification.Id,
+                Target = verification.Email,
+                Type = verification.Type,
+                Code = verification.Code,
+                Expiration = verification.Expiration,
+                Message = ""
+            }, cancellationToken);
+
+            return new AuthenticationResultDto
+            {
+                Success = true,
+                VerificationId = verification.Id
+            };
         }
     }
 }

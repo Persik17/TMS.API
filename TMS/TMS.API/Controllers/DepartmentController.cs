@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TMS.Abstractions.Interfaces.Services;
 using TMS.API.ViewModels.Department;
-using TMS.Application.Models.DTOs.Department;
+using TMS.Application.DTOs.Department;
 
 namespace TMS.API.Controllers
 {
@@ -19,8 +19,8 @@ namespace TMS.API.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="DepartmentController"/> class.
         /// </summary>
-        /// <param name="departmentService">Service for department operations.</param>
-        /// <param name="logger">Logger instance for diagnostics.</param>
+        /// <param name="departmentService">The department service.</param>
+        /// <param name="logger">The logger.</param>
         public DepartmentController(
             IDepartmentService<DepartmentDto, DepartmentCreateDto> departmentService,
             ILogger<DepartmentController> logger)
@@ -30,14 +30,11 @@ namespace TMS.API.Controllers
         }
 
         /// <summary>
-        /// Gets a department by its unique identifier.
+        /// Retrieves a department by its ID.
         /// </summary>
-        /// <param name="id">The unique identifier of the department.</param>
+        /// <param name="id">The ID of the department to retrieve.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>
-        /// <response code="200">Returns the department view model.</response>
-        /// <response code="404">If the department is not found.</response>
-        /// </returns>
+        /// <returns>The department view model.</returns>
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(DepartmentViewModel), 200)]
         [ProducesResponseType(404)]
@@ -73,24 +70,30 @@ namespace TMS.API.Controllers
         /// <summary>
         /// Creates a new department.
         /// </summary>
-        /// <param name="createDto">The DTO containing department data.</param>
+        /// <param name="request">The request containing the department data.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>
-        /// <response code="201">Returns the created department view model.</response>
-        /// <response code="400">If the input data is invalid.</response>
-        /// </returns>
+        /// <returns>The created department view model.</returns>
         [HttpPost]
         [ProducesResponseType(typeof(DepartmentViewModel), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<DepartmentViewModel>> Create([FromBody] DepartmentCreateDto createDto, CancellationToken cancellationToken)
+        public async Task<ActionResult<DepartmentViewModel>> Create([FromBody] DepartmentViewModel request, CancellationToken cancellationToken)
         {
-            if (createDto == null)
+            if (request == null)
             {
                 _logger.LogWarning("Create called with null DTO");
                 return BadRequest("Department data is required.");
             }
 
-            _logger.LogInformation("Creating department: {Name}", createDto.Name);
+            _logger.LogInformation("Creating department: {Name}", request.Name);
+
+            var createDto = new DepartmentCreateDto
+            {
+                Name = request.Name,
+                Description = request.Description,
+                IsActive = request.IsActive,
+                ContactEmail = request.ContactEmail,
+                ContactPhone = request.ContactPhone
+            };
 
             var dto = await _departmentService.CreateAsync(createDto, cancellationToken);
             var viewModel = new DepartmentViewModel
@@ -115,31 +118,41 @@ namespace TMS.API.Controllers
         /// <summary>
         /// Updates an existing department.
         /// </summary>
-        /// <param name="id">The unique identifier of the department.</param>
-        /// <param name="updateDto">The DTO containing updated department data.</param>
+        /// <param name="id">The ID of the department to update.</param>
+        /// <param name="request">The request containing the updated department data.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>
-        /// <response code="204">If the update is successful.</response>
-        /// <response code="400">If the id in the route and body do not match.</response>
-        /// </returns>
+        /// <returns>No content result.</returns>
         [HttpPut("{id:guid}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] DepartmentDto updateDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> Update(Guid id, [FromBody] DepartmentViewModel request, CancellationToken cancellationToken)
         {
-            if (updateDto == null)
+            if (request == null)
             {
                 _logger.LogWarning("Update called with null DTO");
                 return BadRequest("Department data is required.");
             }
 
-            if (id != updateDto.Id)
+            if (id != request.Id)
             {
-                _logger.LogWarning("Update id mismatch: route id {RouteId}, body id {BodyId}", id, updateDto.Id);
+                _logger.LogWarning("Update id mismatch: route id {RouteId}, body id {BodyId}", id, request.Id);
                 return BadRequest("ID mismatch");
             }
 
             _logger.LogInformation("Updating department with id {Id}", id);
+
+            var updateDto = new DepartmentDto
+            {
+                Id = request.Id,
+                Name = request.Name,
+                Description = request.Description,
+                IsActive = request.IsActive,
+                ContactEmail = request.ContactEmail,
+                ContactPhone = request.ContactPhone,
+                CreationDate = request.CreationDate,
+                UpdateDate = request.UpdateDate,
+                DeleteDate = request.DeleteDate
+            };
 
             await _departmentService.UpdateAsync(updateDto, cancellationToken);
 
@@ -149,13 +162,11 @@ namespace TMS.API.Controllers
         }
 
         /// <summary>
-        /// Deletes a department by its unique identifier.
+        /// Deletes a department.
         /// </summary>
-        /// <param name="id">The unique identifier of the department to delete.</param>
+        /// <param name="id">The ID of the department to delete.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>
-        /// <response code="204">If the deletion is successful.</response>
-        /// </returns>
+        /// <returns>No content result.</returns>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)

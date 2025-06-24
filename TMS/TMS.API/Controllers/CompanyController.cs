@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TMS.Abstractions.Interfaces.Services;
 using TMS.API.ViewModels.Company;
-using TMS.Application.Models.DTOs.Company;
+using TMS.Application.DTOs.Company;
 
 namespace TMS.API.Controllers
 {
     /// <summary>
-    /// Controller for managing Company entities via HTTP API.
-    /// Provides endpoints for CRUD operations.
+    /// Controller for managing company entities.
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
@@ -19,8 +18,8 @@ namespace TMS.API.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="CompanyController"/> class.
         /// </summary>
-        /// <param name="companyService">Service for company operations.</param>
-        /// <param name="logger">Logger instance for diagnostics.</param>
+        /// <param name="companyService">The company service.</param>
+        /// <param name="logger">The logger.</param>
         public CompanyController(
             ICompanyService<CompanyDto, CompanyCreateDto> companyService,
             ILogger<CompanyController> logger)
@@ -30,11 +29,11 @@ namespace TMS.API.Controllers
         }
 
         /// <summary>
-        /// Gets a company by its unique identifier.
+        /// Retrieves a company by its unique identifier.
         /// </summary>
         /// <param name="id">The unique identifier of the company.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>The company view model or 404 if not found.</returns>
+        /// <returns>The company view model.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<CompanyViewModel>> GetCompany(Guid id, CancellationToken cancellationToken = default)
         {
@@ -59,19 +58,24 @@ namespace TMS.API.Controllers
         /// <summary>
         /// Creates a new company.
         /// </summary>
-        /// <param name="companyCreateDto">The DTO containing company data.</param>
+        /// <param name="request">The request containing the company data.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The created company view model.</returns>
         [HttpPost]
-        public async Task<ActionResult<CompanyViewModel>> CreateCompany([FromBody] CompanyCreateDto companyCreateDto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<CompanyViewModel>> CreateCompany([FromBody] CompanyViewModel request, CancellationToken cancellationToken = default)
         {
-            if (companyCreateDto == null)
+            if (request == null)
             {
                 _logger.LogWarning("CreateCompany called with null DTO");
                 return BadRequest("Company data is required.");
             }
 
-            _logger.LogInformation("Creating company: {Name}", companyCreateDto.Name);
+            _logger.LogInformation("Creating company: {Name}", request.Name);
+
+            var companyCreateDto = new CompanyCreateDto
+            {
+                Name = request.Name
+            };
 
             var createdCompanyDto = await _companyService.CreateAsync(companyCreateDto, cancellationToken);
 
@@ -89,25 +93,31 @@ namespace TMS.API.Controllers
         /// Updates an existing company.
         /// </summary>
         /// <param name="id">The unique identifier of the company.</param>
-        /// <param name="companyDto">The DTO containing updated company data.</param>
+        /// <param name="request">The request containing updated company data.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The updated company view model.</returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult<CompanyViewModel>> UpdateCompany(Guid id, [FromBody] CompanyDto companyDto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<CompanyViewModel>> UpdateCompany(Guid id, [FromBody] CompanyViewModel request, CancellationToken cancellationToken = default)
         {
-            if (companyDto == null)
+            if (request == null)
             {
                 _logger.LogWarning("UpdateCompany called with null DTO");
                 return BadRequest("Company data is required.");
             }
 
-            if (id != companyDto.Id)
+            if (id != request.Id)
             {
-                _logger.LogWarning("UpdateCompany id mismatch: route id {RouteId}, body id {BodyId}", id, companyDto.Id);
+                _logger.LogWarning("UpdateCompany id mismatch: route id {RouteId}, body id {BodyId}", id, request.Id);
                 return BadRequest("ID in the route and body must match.");
             }
 
             _logger.LogInformation("Updating company with id {Id}", id);
+
+            var companyDto = new CompanyDto
+            {
+                Id = request.Id,
+                Name = request.Name
+            };
 
             var updatedCompanyDto = await _companyService.UpdateAsync(companyDto, cancellationToken);
 

@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TMS.Abstractions.Interfaces.Services;
 using TMS.API.ViewModels.NotificationSetting;
-using TMS.Application.Models.DTOs.NotificationSetting;
+using TMS.Application.DTOs.NotificationSetting;
 
 namespace TMS.API.Controllers
 {
+    /// <summary>
+    /// Controller for managing notification settings.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class NotificationSettingController : ControllerBase
@@ -12,6 +15,11 @@ namespace TMS.API.Controllers
         private readonly INotificationSettingService<NotificationSettingDto, NotificationSettingCreateDto> _service;
         private readonly ILogger<NotificationSettingController> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NotificationSettingController"/> class.
+        /// </summary>
+        /// <param name="service">The notification setting service.</param>
+        /// <param name="logger">The logger.</param>
         public NotificationSettingController(
             INotificationSettingService<NotificationSettingDto, NotificationSettingCreateDto> service,
             ILogger<NotificationSettingController> logger)
@@ -20,12 +28,23 @@ namespace TMS.API.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Retrieves a notification setting by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the notification setting to retrieve.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The notification setting view model.</returns>
         [HttpGet("{id:guid}")]
+        [ProducesResponseType(typeof(NotificationSettingViewModel), 200)]
+        [ProducesResponseType(404)]
         public async Task<ActionResult<NotificationSettingViewModel>> GetById(Guid id, CancellationToken cancellationToken)
         {
             var dto = await _service.GetByIdAsync(id, cancellationToken);
             if (dto == null)
+            {
+                _logger.LogWarning("Notification setting with id {Id} not found", id);
                 return NotFound();
+            }
 
             return Ok(new NotificationSettingViewModel
             {
@@ -36,17 +55,28 @@ namespace TMS.API.Controllers
             });
         }
 
+        /// <summary>
+        /// Creates a new notification setting.
+        /// </summary>
+        /// <param name="request">The request containing the notification setting data.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The created notification setting view model.</returns>
         [HttpPost]
-        public async Task<ActionResult<NotificationSettingViewModel>> Create([FromBody] NotificationSettingCreateViewModel model, CancellationToken cancellationToken)
+        [ProducesResponseType(typeof(NotificationSettingViewModel), 200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<NotificationSettingViewModel>> Create([FromBody] NotificationSettingCreateViewModel request, CancellationToken cancellationToken)
         {
-            if (model == null)
+            if (request == null)
+            {
+                _logger.LogWarning("Create called with null model");
                 return BadRequest("Data is required.");
+            }
 
             var dto = new NotificationSettingCreateDto
             {
-                EmailNotificationsEnabled = model.EmailNotificationsEnabled,
-                PushNotificationsEnabled = model.PushNotificationsEnabled,
-                TelegramNotificationsEnabled = model.TelegramNotificationsEnabled
+                EmailNotificationsEnabled = request.EmailNotificationsEnabled,
+                PushNotificationsEnabled = request.PushNotificationsEnabled,
+                TelegramNotificationsEnabled = request.TelegramNotificationsEnabled
             };
 
             var created = await _service.CreateAsync(dto, cancellationToken);
@@ -60,18 +90,30 @@ namespace TMS.API.Controllers
             });
         }
 
+        /// <summary>
+        /// Updates an existing notification setting.
+        /// </summary>
+        /// <param name="id">The ID of the notification setting to update.</param>
+        /// <param name="request">The request containing the updated notification setting data.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The updated notification setting view model.</returns>
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<NotificationSettingViewModel>> Update(Guid id, [FromBody] NotificationSettingViewModel model, CancellationToken cancellationToken)
+        [ProducesResponseType(typeof(NotificationSettingViewModel), 200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<NotificationSettingViewModel>> Update(Guid id, [FromBody] NotificationSettingViewModel request, CancellationToken cancellationToken)
         {
-            if (model == null || id != model.Id)
+            if (request == null || id != request.Id)
+            {
+                _logger.LogWarning("Update called with invalid model or ID mismatch. Id: {Id}", id);
                 return BadRequest("Invalid data.");
+            }
 
             var dto = new NotificationSettingDto
             {
-                Id = model.Id,
-                EmailNotificationsEnabled = model.EmailNotificationsEnabled,
-                PushNotificationsEnabled = model.PushNotificationsEnabled,
-                TelegramNotificationsEnabled = model.TelegramNotificationsEnabled
+                Id = request.Id,
+                EmailNotificationsEnabled = request.EmailNotificationsEnabled,
+                PushNotificationsEnabled = request.PushNotificationsEnabled,
+                TelegramNotificationsEnabled = request.TelegramNotificationsEnabled
             };
 
             var updated = await _service.UpdateAsync(dto, cancellationToken);

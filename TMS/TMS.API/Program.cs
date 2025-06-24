@@ -29,6 +29,18 @@ namespace TMS.API
             // Configure RabbitMQ
             ConfigureRabbitMQ.Apply(builder.Services);
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin",
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:4200") // Angular app URL
+                               .AllowAnyMethod()
+                               .AllowAnyHeader()
+                               .AllowCredentials(); // Important for cookies and authentication
+                    });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -37,6 +49,8 @@ namespace TMS.API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+
 
             app.UseHttpsRedirection();
 

@@ -5,6 +5,9 @@ using TMS.Application.DTOs.Board;
 
 namespace TMS.API.Controllers
 {
+    /// <summary>
+    /// Controller for managing boards.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class BoardController : ControllerBase
@@ -12,6 +15,11 @@ namespace TMS.API.Controllers
         private readonly IBoardService<BoardDto, BoardCreateDto> _boardService;
         private readonly ILogger<BoardController> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BoardController"/> class.
+        /// </summary>
+        /// <param name="boardService">The board service.</param>
+        /// <param name="logger">The logger.</param>
         public BoardController(
             IBoardService<BoardDto, BoardCreateDto> boardService,
             ILogger<BoardController> logger)
@@ -20,6 +28,12 @@ namespace TMS.API.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Retrieves a board by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the board to retrieve.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the retrieved board or a 404 Not Found if the board does not exist.</returns>
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<BoardViewModel>> GetById(Guid id, CancellationToken cancellationToken)
         {
@@ -46,10 +60,16 @@ namespace TMS.API.Controllers
             return Ok(viewModel);
         }
 
+        /// <summary>
+        /// Creates a new board.
+        /// </summary>
+        /// <param name="request">The request containing the data for the new board.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the newly created board.</returns>
         [HttpPost]
-        public async Task<ActionResult<BoardViewModel>> Create([FromBody] BoardCreateViewModel model, CancellationToken cancellationToken)
+        public async Task<ActionResult<BoardViewModel>> Create([FromBody] BoardViewModel request, CancellationToken cancellationToken)
         {
-            if (model == null)
+            if (request == null)
             {
                 _logger.LogWarning("Create called with null model");
                 return BadRequest("Board data is required.");
@@ -57,11 +77,11 @@ namespace TMS.API.Controllers
 
             var dto = new BoardCreateDto
             {
-                Name = model.Name,
-                Description = model.Description,
-                DepartmentId = model.DepartmentId,
-                BoardType = model.BoardType,
-                IsPrivate = model.IsPrivate
+                Name = request.Name,
+                Description = request.Description,
+                DepartmentId = request.DepartmentId,
+                BoardType = request.BoardType,
+                IsPrivate = request.IsPrivate
             };
 
             var board = await _boardService.CreateAsync(dto, cancellationToken);
@@ -82,40 +102,54 @@ namespace TMS.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = board.Id }, viewModel);
         }
 
+        /// <summary>
+        /// Updates an existing board.
+        /// </summary>
+        /// <param name="id">The ID of the board to update.</param>
+        /// <param name="request">The request containing the updated data for the board.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the result of the update operation.</returns>
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] BoardViewModel model, CancellationToken cancellationToken)
+        public async Task<IActionResult> Update(Guid id, [FromBody] BoardViewModel request, CancellationToken cancellationToken)
         {
-            if (model == null)
+            if (request == null)
             {
                 _logger.LogWarning("Update called with null model");
                 return BadRequest("Board data is required.");
             }
-            if (id != model.Id)
+            if (id != request.Id)
             {
-                _logger.LogWarning("Update id mismatch: route id {RouteId}, body id {BodyId}", id, model.Id);
+                _logger.LogWarning("Update id mismatch: route id {RouteId}, body id {BodyId}", id, request.Id);
                 return BadRequest("ID mismatch");
             }
 
             var dto = new BoardDto
             {
-                Id = model.Id,
-                Name = model.Name,
-                Description = model.Description,
-                DepartmentId = model.DepartmentId,
-                BoardType = model.BoardType,
-                IsPrivate = model.IsPrivate,
-                CreationDate = model.CreationDate,
-                UpdateDate = model.UpdateDate,
-                DeleteDate = model.DeleteDate
+                Id = request.Id,
+                Name = request.Name,
+                Description = request.Description,
+                DepartmentId = request.DepartmentId,
+                BoardType = request.BoardType,
+                IsPrivate = request.IsPrivate,
+                CreationDate = request.CreationDate,
+                UpdateDate = request.UpdateDate,
+                DeleteDate = request.DeleteDate
             };
 
             await _boardService.UpdateAsync(dto, cancellationToken);
             return NoContent();
         }
 
+        /// <summary>
+        /// Deletes a board.
+        /// </summary>
+        /// <param name="id">The ID of the board to delete.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the result of the delete operation.</returns>
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
+            //NOTE: Add check for valid id before deletion.
             await _boardService.DeleteAsync(id, cancellationToken);
             return NoContent();
         }
