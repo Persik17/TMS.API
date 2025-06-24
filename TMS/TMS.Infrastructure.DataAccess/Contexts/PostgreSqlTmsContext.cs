@@ -105,11 +105,6 @@ namespace TMS.Infrastructure.DataAccess.Contexts
         public DbSet<UserVerification> UserVerifications { get; set; }
 
         /// <summary>
-        /// Gets or sets the DbSet for RegistrationVerification entities.
-        /// </summary>
-        public DbSet<RegistrationVerification> RegistrationVerifications { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="PostgreSqlTmsContext"/> class.
         /// </summary>
         /// <param name="options">The options to be used by the DbContext.</param>

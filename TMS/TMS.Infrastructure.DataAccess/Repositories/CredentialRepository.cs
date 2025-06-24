@@ -50,5 +50,10 @@ namespace TMS.Infrastructure.DataAccess.Repositories
         {
             return await _context.Credentials.FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
         }
+
+        public async Task<Credential> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+        {
+            return await _context.Credentials.FirstOrDefaultAsync(c => c.Email == email, cancellationToken);
+        }
     }
 }

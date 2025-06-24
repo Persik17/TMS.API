@@ -14,9 +14,8 @@ namespace TMS.Infrastructure.DataAccess.DataModels
         public DateTime? UpdateDate { get; set; }
         public DateTime? DeleteDate { get; set; }
 
-        [Required]
         [MaxLength(255)]
-        public string FullName { get; set; }
+        public string? FullName { get; set; }
 
         [Required]
         [MaxLength(255)]
@@ -36,13 +35,13 @@ namespace TMS.Infrastructure.DataAccess.DataModels
         public DateTime LastLoginDate { get; set; }
 
 
-        public Guid NotificationSettingsId { get; set; }
+        public Guid? NotificationSettingsId { get; set; }
         public NotificationSetting NotificationSettings { get; set; }
 
         public int Status { get; set; }
 
         [MaxLength(20)]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
 
         public bool IsVerified { get; set; }
 

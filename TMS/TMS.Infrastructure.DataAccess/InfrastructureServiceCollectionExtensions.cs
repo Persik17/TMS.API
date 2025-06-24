@@ -35,13 +35,12 @@ namespace TMS.Infrastructure.DataAccess
             services.AddScoped<ICredentialRepository<Credential>, CredentialRepository>();
             services.AddScoped<IAuditableCommandRepository<Department>, DepartmentRepository>();
             services.AddScoped<IAuditableQueryRepository<Department>, DepartmentRepository>();
-            services.AddScoped<ICommandRepository<NotificationSetting>, NotificationSettingRepository>();
-            services.AddScoped<IQueryRepository<NotificationSetting>, NotificationSettingRepository>();
+            services.AddScoped<INotificationSettingRepository<NotificationSetting>, NotificationSettingRepository>();
             services.AddScoped<IAuditableCommandRepository<Permission>, PermissionRepository>();
             services.AddScoped<IAuditableQueryRepository<Permission>, PermissionRepository>();
             services.AddScoped<IAuditableCommandRepository<RolePermission>, RolePermissionRepository>();
             services.AddScoped<IAuditableQueryRepository<RolePermission>, RolePermissionRepository>();
-            services.AddScoped<IRoleRepository<DataModels.Role>, RoleRepository>();
+            services.AddScoped<IRoleRepository<Role>, RoleRepository>();
             services.AddScoped<ITaskRepository<DataModels.Task>, TaskRepository>();
             services.AddScoped<IAuditableCommandRepository<TaskType>, TaskTypeRepository>();
             services.AddScoped<IAuditableQueryRepository<TaskType>, TaskTypeRepository>();
@@ -49,8 +48,10 @@ namespace TMS.Infrastructure.DataAccess
             services.AddScoped<IAuditableQueryRepository<TelegramAccount>, TelegramAccountRepository>();
             services.AddScoped<IAuditableCommandRepository<UserDepartment>, UserDepartmentRepository>();
             services.AddScoped<IAuditableQueryRepository<UserDepartment>, UserDepartmentRepository>();
-            services.AddScoped<ICommandRepository<RegistrationVerification>, RegistrationVerificationRepository>();
-            services.AddScoped<IQueryRepository<RegistrationVerification>, RegistrationVerificationRepository>();
+
+            services.AddScoped<ICommandRepository<UserVerification>, UserVerificationRepository>();
+            services.AddScoped<IQueryRepository<UserVerification>, UserVerificationRepository>();
+
             services.AddScoped<IUserRepository<User>, UserRepository>();
 
             return services;

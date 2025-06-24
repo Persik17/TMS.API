@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TMS.Infrastructure.DataAccess.Contexts;
@@ -11,9 +12,11 @@ using TMS.Infrastructure.DataAccess.Contexts;
 namespace TMS.Infrastructure.DataAccess.Migrations
 {
     [DbContext(typeof(PostgreSqlTmsContext))]
-    partial class PostgreSqlTmsContextModelSnapshot : ModelSnapshot
+    [Migration("20250620193502_UpdateVerificationTables")]
+    partial class UpdateVerificationTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -671,6 +674,7 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("character varying(255)");
 
                     b.Property<string>("FullName")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
@@ -685,10 +689,11 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                     b.Property<DateTime>("LastLoginDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("NotificationSettingsId")
+                    b.Property<Guid>("NotificationSettingsId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
@@ -987,7 +992,9 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                 {
                     b.HasOne("TMS.Infrastructure.DataAccess.DataModels.NotificationSetting", "NotificationSettings")
                         .WithMany()
-                        .HasForeignKey("NotificationSettingsId");
+                        .HasForeignKey("NotificationSettingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("TMS.Infrastructure.DataAccess.DataModels.TelegramAccount", "Telegram")
                         .WithMany()

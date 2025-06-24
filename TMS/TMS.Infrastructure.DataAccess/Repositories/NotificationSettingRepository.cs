@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TMS.Abstractions.Interfaces.Repositories.BaseRepositories;
+using TMS.Abstractions.Interfaces.Repositories;
 using TMS.Infrastructure.DataAccess.Contexts;
 using TMS.Infrastructure.DataAccess.DataModels;
+
 namespace TMS.Infrastructure.DataAccess.Repositories
 {
-    public class NotificationSettingRepository : ICommandRepository<NotificationSetting>, IQueryRepository<NotificationSetting>
+    public class NotificationSettingRepository : INotificationSettingRepository<NotificationSetting>
     {
         private readonly PostgreSqlTmsContext _context;
 

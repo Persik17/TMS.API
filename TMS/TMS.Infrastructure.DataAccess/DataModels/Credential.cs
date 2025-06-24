@@ -20,7 +20,7 @@ namespace TMS.Infrastructure.DataAccess.DataModels
 
         [Required]
         [MaxLength(255)]
-        public string Login { get; set; }
+        public string Email { get; set; }
 
         [Required]
         public string PasswordHash { get; set; }
