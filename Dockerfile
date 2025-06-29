@@ -1,16 +1,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build-env
 WORKDIR /app
 
-COPY TMS.API/*.csproj ./TMS.API/
-COPY TMS.Abstractions/*.csproj ./TMS.Abstractions/
-COPY TMS.Application/*.csproj ./TMS.Application/
-COPY TMS.Infrastructure/*.csproj ./TMS.Infrastructure/
-COPY TMS.sln ./
-RUN dotnet restore
-
 COPY . ./
 
-# Публикуем только API
+RUN dotnet restore
+
 WORKDIR /app/TMS.API
 RUN dotnet publish -c Release -o out
 
