@@ -9,7 +9,7 @@ namespace TMS.Infrastructure.DataAccess.Contexts
         {
             var optionsBuilder = new DbContextOptionsBuilder<PostgreSqlTmsContext>();
 
-            var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+            var connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
             optionsBuilder.UseNpgsql(connectionString);
 
             return new PostgreSqlTmsContext(optionsBuilder.Options);

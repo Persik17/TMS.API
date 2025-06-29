@@ -25,9 +25,9 @@ namespace TMS.API.Configuration
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddDbContext<PostgreSqlTmsContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddDbContext<PostgreSqlTmsContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("POSTGRES_CONNECTION_STRING")));
 
-            builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")));
+            builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("REDIS_CONNECTION_STRING")));
             builder.Services.AddTransient<IRedisCacheContext, RedisCacheContext>();
         }
     }
