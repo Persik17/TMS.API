@@ -6,10 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="TMS.Contracts">
-      <HintPath>..\..\..\TMS.Contracts\TMS.Contracts\bin\Debug\net9.0\TMS.Contracts.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
