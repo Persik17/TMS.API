@@ -2,10 +2,13 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build-env
 WORKDIR /app
 
 COPY TMS.API/*.csproj ./TMS.API/
-WORKDIR /app/TMS.API
+COPY TMS.Abstractions/*.csproj ./TMS.Abstractions/
+COPY TMS.Application/*.csproj ./TMS.Application/
+COPY TMS.Infrastructure/*.csproj ./TMS.Infrastructure/
+COPY TMS.Tests/*.csproj ./TMS.Tests/
+COPY TMS.sln ./
 RUN dotnet restore
 
-WORKDIR /app
 COPY . ./
 
 WORKDIR /app/TMS.API
@@ -16,5 +19,4 @@ WORKDIR /app
 COPY --from=build-env /app/TMS.API/out ./
 
 EXPOSE 80
-
 ENTRYPOINT ["dotnet", "TMS.API.dll"]
