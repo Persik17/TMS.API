@@ -7,15 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\TMS.Abstractions\TMS.Abstractions.csproj" />
-    <ProjectReference Include="..\..\TMS.Infrastructure\TMS.Infrastructure.Abstractions\TMS.Infrastructure.Abstractions.csproj" />
-    <ProjectReference Include="..\TMS.Application.Dto\TMS.Application.Dto.csproj" />
+    <PackageReference Include="TMS.Contracts" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="TMS.Contracts">
-      <HintPath>..\..\..\TMS.Contracts\TMS.Contracts\bin\Debug\net9.0\TMS.Contracts.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\TMS.Abstractions\TMS.Abstractions.csproj" />
+    <ProjectReference Include="..\..\TMS.Infrastructure\TMS.Infrastructure.Abstractions\TMS.Infrastructure.Abstractions.csproj" />
+    <ProjectReference Include="..\TMS.Application.Dto\TMS.Application.Dto.csproj" />
   </ItemGroup>
 
 </Project>
