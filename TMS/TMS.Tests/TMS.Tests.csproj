@@ -20,10 +20,4 @@
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Application\" />
-    <Folder Include="Infrastructure\" />
-    <Folder Include="Utils\" />
-  </ItemGroup>
-
 </Project>
