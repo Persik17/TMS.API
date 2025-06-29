@@ -1,19 +1,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build-env
 WORKDIR /app
 
-COPY TMS.API/*.csproj ./TMS.API/
-WORKDIR /app/TMS.API
+COPY *.csproj ./
 RUN dotnet restore
 
-WORKDIR /app
-COPY . .
-
-WORKDIR /app/TMS.API
+COPY . ./
 RUN dotnet publish -c Release -o out
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
-COPY --from=build-env /app/TMS.API/out ./
+COPY --from=build-env /app/out ./
 
 EXPOSE 80
 
