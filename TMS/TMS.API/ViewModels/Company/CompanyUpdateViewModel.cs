@@ -1,9 +1,9 @@
 ﻿namespace TMS.API.ViewModels.Company
 {
     /// <summary>
-    /// View model representing a company.
+    /// View model for updating a company.
     /// </summary>
-    public class CompanyViewModel
+    public class CompanyUpdateViewModel
     {
         public Guid Id { get; set; }
         public string Name { get; set; }

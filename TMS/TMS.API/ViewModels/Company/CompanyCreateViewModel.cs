@@ -1,11 +1,10 @@
 ﻿namespace TMS.API.ViewModels.Company
 {
     /// <summary>
-    /// View model representing a company.
+    /// View model for creating a company.
     /// </summary>
-    public class CompanyViewModel
+    public class CompanyCreateViewModel
     {
-        public Guid Id { get; set; }
         public string Name { get; set; }
         public string INN { get; set; }
         public string OGRN { get; set; }
@@ -14,11 +13,7 @@
         public string Website { get; set; }
         public string Industry { get; set; }
         public string Description { get; set; }
-        public Guid OwnerId { get; set; }
         public string ContactEmail { get; set; }
         public string ContactPhone { get; set; }
-        public DateTime CreationDate { get; set; }
-        public DateTime? UpdateDate { get; set; }
-        public DateTime? DeleteDate { get; set; }
     }
 }

@@ -1,18 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TMS.Abstractions.Interfaces.Services;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TMS.API.ViewModels.NotificationSetting;
-using TMS.Application.DTOs.NotificationSetting;
+using TMS.Application.Abstractions.Services;
+using TMS.Application.Dto.NotificationSetting;
 
 namespace TMS.API.Controllers
 {
     /// <summary>
     /// Controller for managing notification settings.
     /// </summary>
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class NotificationSettingController : ControllerBase
     {
-        private readonly INotificationSettingService<NotificationSettingDto, NotificationSettingCreateDto> _service;
+        private readonly INotificationSettingService _service;
         private readonly ILogger<NotificationSettingController> _logger;
 
         /// <summary>
@@ -21,7 +23,7 @@ namespace TMS.API.Controllers
         /// <param name="service">The notification setting service.</param>
         /// <param name="logger">The logger.</param>
         public NotificationSettingController(
-            INotificationSettingService<NotificationSettingDto, NotificationSettingCreateDto> service,
+            INotificationSettingService service,
             ILogger<NotificationSettingController> logger)
         {
             _service = service;
@@ -37,9 +39,9 @@ namespace TMS.API.Controllers
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(NotificationSettingViewModel), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<NotificationSettingViewModel>> GetById(Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult<NotificationSettingViewModel>> GetById(Guid id, Guid userId, CancellationToken cancellationToken)
         {
-            var dto = await _service.GetByIdAsync(id, cancellationToken);
+            var dto = await _service.GetByIdAsync(id, userId, cancellationToken);
             if (dto == null)
             {
                 _logger.LogWarning("Notification setting with id {Id} not found", id);
@@ -64,7 +66,7 @@ namespace TMS.API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(NotificationSettingViewModel), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<NotificationSettingViewModel>> Create([FromBody] NotificationSettingCreateViewModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<NotificationSettingViewModel>> Create([FromBody] NotificationSettingCreateViewModel request, Guid userId, CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -79,7 +81,7 @@ namespace TMS.API.Controllers
                 TelegramNotificationsEnabled = request.TelegramNotificationsEnabled
             };
 
-            var created = await _service.CreateAsync(dto, cancellationToken);
+            var created = await _service.CreateAsync(dto, userId, cancellationToken);
 
             return Ok(new NotificationSettingViewModel
             {
@@ -100,7 +102,7 @@ namespace TMS.API.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(NotificationSettingViewModel), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<NotificationSettingViewModel>> Update(Guid id, [FromBody] NotificationSettingViewModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<NotificationSettingViewModel>> Update(Guid id, [FromBody] NotificationSettingViewModel request, Guid userId, CancellationToken cancellationToken)
         {
             if (request == null || id != request.Id)
             {
@@ -116,7 +118,7 @@ namespace TMS.API.Controllers
                 TelegramNotificationsEnabled = request.TelegramNotificationsEnabled
             };
 
-            var updated = await _service.UpdateAsync(dto, cancellationToken);
+            var updated = await _service.UpdateAsync(dto, userId, cancellationToken);
 
             return Ok(new NotificationSettingViewModel
             {

@@ -1,9 +1,18 @@
 ﻿namespace TMS.API.ViewModels.Registration
 {
+    /// <summary>
+    /// Model for user registration request (email and password).
+    /// </summary>
     public class RegistrationViewModel
     {
-        public string Target { get; set; }
-        public int Type { get; set; } // Email
+        /// <summary>
+        /// User's email for registration.
+        /// </summary>
+        public string Email { get; set; }
+
+        /// <summary>
+        /// Password for registration.
+        /// </summary>
         public string Password { get; set; }
     }
 }

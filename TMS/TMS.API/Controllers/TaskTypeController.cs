@@ -1,18 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TMS.Abstractions.Interfaces.Services;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TMS.API.ViewModels.TaskType;
-using TMS.Application.DTOs.TaskType;
+using TMS.Application.Abstractions.Services;
+using TMS.Application.Dto.TaskType;
 
 namespace TMS.API.Controllers
 {
     /// <summary>
     /// Controller for managing task types.
     /// </summary>
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class TaskTypeController : ControllerBase
     {
-        private readonly ITaskTypeService<TaskTypeDto, TaskTypeCreateDto> _service;
+        private readonly ITaskTypeService _service;
         private readonly ILogger<TaskTypeController> _logger;
 
         /// <summary>
@@ -21,7 +23,7 @@ namespace TMS.API.Controllers
         /// <param name="service">The task type service.</param>
         /// <param name="logger">The logger.</param>
         public TaskTypeController(
-            ITaskTypeService<TaskTypeDto, TaskTypeCreateDto> service,
+            ITaskTypeService service,
             ILogger<TaskTypeController> logger)
         {
             _service = service;
@@ -37,9 +39,9 @@ namespace TMS.API.Controllers
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(TaskTypeViewModel), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<TaskTypeViewModel>> GetById(Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult<TaskTypeViewModel>> GetById(Guid id, Guid userId, CancellationToken cancellationToken)
         {
-            var dto = await _service.GetByIdAsync(id, cancellationToken);
+            var dto = await _service.GetByIdAsync(id, userId, cancellationToken);
             if (dto == null)
             {
                 _logger.LogWarning("TaskType with id {Id} not found", id);
@@ -66,7 +68,7 @@ namespace TMS.API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(TaskTypeViewModel), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<TaskTypeViewModel>> Create([FromBody] TaskTypeCreateViewModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<TaskTypeViewModel>> Create([FromBody] TaskTypeCreateViewModel request, Guid userId, CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -81,7 +83,7 @@ namespace TMS.API.Controllers
                 Description = request.Description
             };
 
-            var created = await _service.CreateAsync(dto, cancellationToken);
+            var created = await _service.CreateAsync(dto, userId, cancellationToken);
 
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, new TaskTypeViewModel
             {
@@ -104,7 +106,7 @@ namespace TMS.API.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] TaskTypeViewModel request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Update(Guid id, [FromBody] TaskTypeViewModel request, Guid userId, CancellationToken cancellationToken)
         {
             if (request == null || id != request.Id)
             {
@@ -123,7 +125,7 @@ namespace TMS.API.Controllers
                 DeleteDate = request.DeleteDate
             };
 
-            await _service.UpdateAsync(dto, cancellationToken);
+            await _service.UpdateAsync(dto, userId, cancellationToken);
 
             return NoContent();
         }
@@ -136,10 +138,10 @@ namespace TMS.API.Controllers
         /// <returns>No content result.</returns>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> Delete(Guid id, Guid userId, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Deleting TaskType with id {Id}", id);
-            await _service.DeleteAsync(id, cancellationToken);
+            await _service.DeleteAsync(id, userId, cancellationToken);
             return NoContent();
         }
     }

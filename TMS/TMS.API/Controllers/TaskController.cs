@@ -1,18 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TMS.Abstractions.Interfaces.Services;
-using TMS.Abstractions.Models.DTOs.Task;
-using TMS.Application.DTOs.Task;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using TMS.Application.Abstractions.Services;
+using TMS.Application.Dto.Comment;
+using TMS.Application.Dto.Task;
 
 namespace TMS.API.Controllers
 {
     /// <summary>
     /// Controller for managing Task entities.
     /// </summary>
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class TaskController : ControllerBase
     {
-        private readonly ITaskService<TaskDto, TaskCreateDto> _taskService;
+        private readonly ITaskService _taskService;
         private readonly ILogger<TaskController> _logger;
 
         /// <summary>
@@ -21,7 +23,7 @@ namespace TMS.API.Controllers
         /// <param name="taskService">The task service.</param>
         /// <param name="logger">The logger.</param>
         public TaskController(
-            ITaskService<TaskDto, TaskCreateDto> taskService,
+            ITaskService taskService,
             ILogger<TaskController> logger)
         {
             _taskService = taskService;
@@ -37,9 +39,9 @@ namespace TMS.API.Controllers
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(TaskDto), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<TaskDto>> GetById(Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult<TaskDto>> GetById(Guid id, Guid userId, CancellationToken cancellationToken)
         {
-            var task = await _taskService.GetByIdAsync(id, cancellationToken);
+            var task = await _taskService.GetByIdAsync(id, userId, cancellationToken);
             if (task == null)
             {
                 _logger.LogWarning("Task with id {Id} not found", id);
@@ -57,7 +59,7 @@ namespace TMS.API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(TaskDto), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<TaskDto>> Create([FromBody] TaskCreateDto request, CancellationToken cancellationToken)
+        public async Task<ActionResult<TaskDto>> Create([FromBody] TaskCreateDto request, Guid userId, CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -75,7 +77,7 @@ namespace TMS.API.Controllers
                 Priority = request.Priority,
             };
 
-            var task = await _taskService.CreateAsync(createDto, cancellationToken);
+            var task = await _taskService.CreateAsync(createDto, userId, cancellationToken);
             return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
         }
 
@@ -89,7 +91,7 @@ namespace TMS.API.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] TaskDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Update(Guid id, [FromBody] TaskDto request, Guid userId, CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -114,7 +116,7 @@ namespace TMS.API.Controllers
             };
 
 
-            await _taskService.UpdateAsync(updateDto, cancellationToken);
+            await _taskService.UpdateAsync(updateDto, userId, cancellationToken);
             return NoContent();
         }
 
@@ -126,9 +128,9 @@ namespace TMS.API.Controllers
         /// <returns>No content result.</returns>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> Delete(Guid id, Guid userId, CancellationToken cancellationToken)
         {
-            await _taskService.DeleteAsync(id, cancellationToken);
+            await _taskService.DeleteAsync(id, userId, cancellationToken);
             return NoContent();
         }
 
@@ -169,9 +171,9 @@ namespace TMS.API.Controllers
         /// <returns>The collection of comment DTOs.</returns>
         [HttpGet("{taskId:guid}/comments")]
         [ProducesResponseType(typeof(IEnumerable<CommentDto>), 200)]
-        public async Task<ActionResult<IEnumerable<CommentDto>>> GetComments(Guid taskId, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<CommentDto>>> GetComments(Guid taskId, Guid userId, CancellationToken cancellationToken)
         {
-            var comments = await _taskService.GetCommentsAsync(taskId, cancellationToken);
+            var comments = await _taskService.GetCommentsAsync(taskId, userId, cancellationToken);
             return Ok(comments);
         }
 
@@ -214,10 +216,10 @@ namespace TMS.API.Controllers
         /// <returns>No content result.</returns>
         [HttpDelete("{taskId:guid}/comments/{commentId:guid}")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> DeleteComment(Guid taskId, Guid commentId, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeleteComment(Guid taskId, Guid commentId, Guid userId, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Deleting comment with id {CommentId} from task {TaskId}", commentId, taskId);
-            await _taskService.DeleteCommentAsync(taskId, commentId, cancellationToken);
+            await _taskService.DeleteCommentAsync(taskId, commentId, userId, cancellationToken);
             return NoContent();
         }
     }

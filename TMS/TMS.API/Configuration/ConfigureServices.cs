@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
-using TMS.Abstractions.Interfaces.Cache;
 using TMS.Application;
+using TMS.Infrastructure.Abstractions.Cache;
 using TMS.Infrastructure.DataAccess;
 using TMS.Infrastructure.DataAccess.Contexts;
 
@@ -26,7 +26,7 @@ namespace TMS.API.Configuration
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddDbContext<PostgreSqlTmsContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Host=localhost;Port=5432;Database=otusTMS;Username=postgres;Password=3353"));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Host=localhost;Port=5432;Database=TMS;Username=postgres;Password=3353"));
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
             builder.Services.AddTransient<IRedisCacheContext, RedisCacheContext>();

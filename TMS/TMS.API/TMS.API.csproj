@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="MassTransit" Version="8.4.1" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
       <PrivateAssets>all</PrivateAssets>
@@ -19,14 +20,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TMS.Abstractions\TMS.Abstractions.csproj" />
-    <ProjectReference Include="..\TMS.Application\TMS.Application.csproj" />
-    <ProjectReference Include="..\TMS.Infrastructure.DataAccess\TMS.Infrastructure.DataAccess.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="TMS.Contracts">
-      <HintPath>..\..\..\TMS.Contracts\TMS.Contracts\bin\Debug\net9.0\TMS.Contracts.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\TMS.Application\TMS.Application.Abstractions\TMS.Application.Abstractions.csproj" />
+    <ProjectReference Include="..\TMS.Application\TMS.Application.Dto\TMS.Application.Dto.csproj" />
+    <ProjectReference Include="..\TMS.Application\TMS.Application\TMS.Application.csproj" />
+    <ProjectReference Include="..\TMS.Infrastructure\TMS.Infrastructure.DataAccess\TMS.Infrastructure.DataAccess.csproj" />
   </ItemGroup>
 
 </Project>

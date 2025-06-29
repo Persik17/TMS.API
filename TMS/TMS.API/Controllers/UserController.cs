@@ -1,18 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TMS.Abstractions.Interfaces.Services;
-using TMS.Abstractions.Models.DTOs.User;
-using TMS.Application.DTOs.User;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using TMS.Application.Abstractions.Services;
+using TMS.Application.Dto.TelegramAccount;
+using TMS.Application.Dto.User;
 
 namespace TMS.API.Controllers
 {
     /// <summary>
     /// Controller for managing users (CRUD).
     /// </summary>
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly IUserService<UserDto, UserCreateDto> _userService;
+        private readonly IUserService _userService;
         private readonly ILogger<UserController> _logger;
 
         /// <summary>
@@ -21,7 +23,7 @@ namespace TMS.API.Controllers
         /// <param name="userService">The user service.</param>
         /// <param name="logger">The logger.</param>
         public UserController(
-            IUserService<UserDto, UserCreateDto> userService,
+            IUserService userService,
             ILogger<UserController> logger)
         {
             _userService = userService;
@@ -37,9 +39,9 @@ namespace TMS.API.Controllers
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(UserDto), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<UserDto>> GetById(Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult<UserDto>> GetById(Guid id, Guid userId, CancellationToken cancellationToken)
         {
-            var user = await _userService.GetByIdAsync(id, cancellationToken);
+            var user = await _userService.GetByIdAsync(id, userId, cancellationToken);
             if (user == null)
             {
                 _logger.LogWarning("User with id {Id} not found", id);
@@ -57,7 +59,7 @@ namespace TMS.API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(UserDto), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<UserDto>> Create([FromBody] UserCreateDto request, CancellationToken cancellationToken)
+        public async Task<ActionResult<UserDto>> Create([FromBody] UserCreateDto request, Guid userId, CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -69,7 +71,7 @@ namespace TMS.API.Controllers
             {
             };
 
-            var user = await _userService.CreateAsync(createDto, cancellationToken);
+            var user = await _userService.CreateAsync(createDto, userId, cancellationToken);
             return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
         }
 
@@ -83,7 +85,7 @@ namespace TMS.API.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] UserDto request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Update(Guid id, [FromBody] UserDto request, Guid userId, CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -101,7 +103,7 @@ namespace TMS.API.Controllers
                 Id = request.Id
             };
 
-            await _userService.UpdateAsync(updateDto, cancellationToken);
+            await _userService.UpdateAsync(updateDto, userId, cancellationToken);
             return NoContent();
         }
 
@@ -113,10 +115,10 @@ namespace TMS.API.Controllers
         /// <returns>No content result.</returns>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> Delete(Guid id, Guid userId, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Deleting user with id {Id}", id);
-            await _userService.DeleteAsync(id, cancellationToken);
+            await _userService.DeleteAsync(id, userId, cancellationToken);
             return NoContent();
         }
 

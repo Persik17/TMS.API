@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TMS.Abstractions.Interfaces.Services;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TMS.API.ViewModels.Department;
-using TMS.Application.DTOs.Department;
+using TMS.Application.Abstractions.Services;
+using TMS.Application.Dto.Department;
 
 namespace TMS.API.Controllers
 {
@@ -9,11 +10,12 @@ namespace TMS.API.Controllers
     /// Controller for managing Department entities via HTTP API.
     /// Provides endpoints for CRUD operations.
     /// </summary>
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class DepartmentController : ControllerBase
     {
-        private readonly IDepartmentService<DepartmentDto, DepartmentCreateDto> _departmentService;
+        private readonly IDepartmentService _departmentService;
         private readonly ILogger<DepartmentController> _logger;
 
         /// <summary>
@@ -22,7 +24,7 @@ namespace TMS.API.Controllers
         /// <param name="departmentService">The department service.</param>
         /// <param name="logger">The logger.</param>
         public DepartmentController(
-            IDepartmentService<DepartmentDto, DepartmentCreateDto> departmentService,
+            IDepartmentService departmentService,
             ILogger<DepartmentController> logger)
         {
             _departmentService = departmentService;
@@ -38,11 +40,11 @@ namespace TMS.API.Controllers
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(DepartmentViewModel), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<DepartmentViewModel>> GetById(Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult<DepartmentViewModel>> GetById(Guid id, Guid userId, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Request to get department with id {Id}", id);
 
-            var dto = await _departmentService.GetByIdAsync(id, cancellationToken);
+            var dto = await _departmentService.GetByIdAsync(id, userId, cancellationToken);
             if (dto == null)
             {
                 _logger.LogWarning("Department with id {Id} not found", id);
@@ -76,7 +78,7 @@ namespace TMS.API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(DepartmentViewModel), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<DepartmentViewModel>> Create([FromBody] DepartmentViewModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<DepartmentViewModel>> Create([FromBody] DepartmentViewModel request, Guid userId, CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -95,7 +97,7 @@ namespace TMS.API.Controllers
                 ContactPhone = request.ContactPhone
             };
 
-            var dto = await _departmentService.CreateAsync(createDto, cancellationToken);
+            var dto = await _departmentService.CreateAsync(createDto, userId, cancellationToken);
             var viewModel = new DepartmentViewModel
             {
                 Id = dto.Id,
@@ -125,7 +127,7 @@ namespace TMS.API.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] DepartmentViewModel request, CancellationToken cancellationToken)
+        public async Task<IActionResult> Update(Guid id, [FromBody] DepartmentViewModel request, Guid userId, CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -154,7 +156,7 @@ namespace TMS.API.Controllers
                 DeleteDate = request.DeleteDate
             };
 
-            await _departmentService.UpdateAsync(updateDto, cancellationToken);
+            await _departmentService.UpdateAsync(updateDto, userId, cancellationToken);
 
             _logger.LogInformation("Department with id {Id} updated", id);
 
@@ -169,11 +171,11 @@ namespace TMS.API.Controllers
         /// <returns>No content result.</returns>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> Delete(Guid id, Guid userId, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Deleting department with id {Id}", id);
 
-            await _departmentService.DeleteAsync(id, cancellationToken);
+            await _departmentService.DeleteAsync(id, userId, cancellationToken);
 
             _logger.LogInformation("Department with id {Id} deleted", id);
 

@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TMS.Abstractions.Interfaces.Services;
-using TMS.Abstractions.Models.DTOs.Authentication;
+using TMS.Abstractions.Exceptions;
 using TMS.API.ViewModels.Authentication;
-using TMS.API.ViewModels.Registration;
+using TMS.API.ViewModels.Verification;
+using TMS.Application.Abstractions.Services;
+using TMS.Application.Dto.Authentication;
+using TMS.Application.Dto.Verification;
 
 namespace TMS.API.Controllers
 {
     /// <summary>
-    /// Controller for handling user authentication.
+    /// Controller for handling user authentication and verification.
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
@@ -21,6 +23,7 @@ namespace TMS.API.Controllers
         /// Initializes a new instance of the <see cref="AuthenticationController"/> class.
         /// </summary>
         /// <param name="authService">The authentication service.</param>
+        /// <param name="verificationService">The verification service.</param>
         /// <param name="logger">The logger.</param>
         public AuthenticationController(
             IAuthenticationService authService,
@@ -33,13 +36,20 @@ namespace TMS.API.Controllers
         }
 
         /// <summary>
-        /// Authenticates a user with the provided credentials.
+        /// Initiates the authentication process for a user via email and password.
+        /// Issues a verification code if credentials are valid.
         /// </summary>
         /// <param name="model">The authentication model containing the user's email and password.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-        /// <returns>An <see cref="IActionResult"/> representing the result of the authentication attempt.</returns>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>Authentication result including verification details.</returns>
         [HttpPost("login")]
-        public async Task<ActionResult<AuthenticationResultViewModel>> Login([FromBody] AuthenticationViewModel model, CancellationToken cancellationToken)
+        [ProducesResponseType(typeof(AuthenticationResultViewModel), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<AuthenticationResultViewModel>> Login(
+            [FromBody] AuthenticationViewModel model,
+            CancellationToken cancellationToken)
         {
             if (model == null)
             {
@@ -65,11 +75,22 @@ namespace TMS.API.Controllers
                         Error = result.Error ?? "Authentication failed."
                     });
                 }
-                _logger.LogInformation("User {Email} logged in successfully.", model.Email);
+
+                _logger.LogInformation("Verification code sent to user {Email}.", model.Email);
                 return Ok(new AuthenticationResultViewModel
                 {
                     Success = true,
-                    Token = result.Token
+                    VerificationId = result.VerificationId,
+                    Expiration = result.Expiration
+                });
+            }
+            catch (AuthenticationFailedException ex)
+            {
+                _logger.LogWarning(ex, "Authentication failed for email {Email}", model.Email);
+                return Unauthorized(new AuthenticationResultViewModel
+                {
+                    Success = false,
+                    Error = ex.Message
                 });
             }
             catch (Exception ex)
@@ -84,15 +105,91 @@ namespace TMS.API.Controllers
         }
 
         /// <summary>
-        /// Confirms a user's registration with a verification code.
+        /// Authenticates or registers a user via Telegram.
+        /// </summary>
+        /// <param name="model">The Telegram authentication model.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>Authentication result with issued token.</returns>
+        [HttpPost("telegram")]
+        [ProducesResponseType(typeof(AuthenticationResultViewModel), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<AuthenticationResultViewModel>> Telegram(
+            [FromBody] TelegramAuthenticationViewModel model,
+            CancellationToken cancellationToken)
+        {
+            if (model == null)
+            {
+                _logger.LogWarning("Telegram login called with null model");
+                return BadRequest("Telegram authentication data is required.");
+            }
+
+            var dto = new TelegramAuthenticationDto
+            {
+                TelegramUserId = model.TelegramUserId,
+                Username = model.Username,
+                FullName = model.FullName,
+                Phone = model.Phone,
+                AuthDate = model.AuthDate,
+                Hash = model.Hash
+            };
+
+            try
+            {
+                var result = await _authService.AuthenticateTelegramAsync(dto, cancellationToken);
+                if (!result.Success)
+                {
+                    _logger.LogWarning("Telegram authentication failed for user {TelegramUserId}", model.TelegramUserId);
+                    return Unauthorized(new AuthenticationResultViewModel
+                    {
+                        Success = false,
+                        Error = result.Error ?? "Telegram authentication failed."
+                    });
+                }
+
+                return Ok(new AuthenticationResultViewModel
+                {
+                    Success = true,
+                    Token = result.Token,
+                    UserId = result.UserId,
+                    TelegramId = result.TelegramId,
+                    FullName = result.FullName,
+                    Email = result.Email
+                });
+            }
+            catch (AuthenticationFailedException ex)
+            {
+                _logger.LogWarning(ex, "Telegram authentication failed for user {TelegramUserId}", model.TelegramUserId);
+                return Unauthorized(new AuthenticationResultViewModel
+                {
+                    Success = false,
+                    Error = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred during Telegram authentication for user {TelegramUserId}", model.TelegramUserId);
+                return StatusCode(500, new AuthenticationResultViewModel
+                {
+                    Success = false,
+                    Error = "An unexpected error occurred."
+                });
+            }
+        }
+
+        /// <summary>
+        /// Confirms a user's authentication or registration using a verification code.
         /// </summary>
         /// <param name="request">The confirmation request data.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>The confirmation result.</returns>
+        /// <returns>The confirmation result with authentication token if successful.</returns>
         [HttpPost("confirm")]
         [ProducesResponseType(typeof(ConfirmationResultViewModel), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<ConfirmationResultViewModel>> Confirm([FromBody] AuthenticationConfirmationViewModel request, CancellationToken cancellationToken)
+        public async Task<ActionResult<ConfirmationResultViewModel>> Confirm(
+            [FromBody] AuthenticationConfirmationViewModel request,
+            CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -100,7 +197,7 @@ namespace TMS.API.Controllers
                 return BadRequest("Confirmation data is required.");
             }
 
-            var dto = new AuthenticationConfirmationDto
+            var dto = new ConfirmationDto
             {
                 VerificationId = request.VerificationId,
                 Code = request.Code
@@ -111,7 +208,8 @@ namespace TMS.API.Controllers
             return Ok(new ConfirmationResultViewModel
             {
                 Success = result.Success,
-                Error = result.Error
+                Error = result.Error,
+                Token = result.Token
             });
         }
     }
