@@ -3,7 +3,7 @@ using TMS.Abstractions.Exceptions;
 using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto.Permission;
 using TMS.Application.Extensions;
-using TMS.Infrastructure.Abstractions.Repositories.BaseRepositories;
+using TMS.Infrastructure.Abstractions.Repositories;
 using TMS.Infrastructure.DataModels;
 
 namespace TMS.Application.Services
@@ -14,8 +14,7 @@ namespace TMS.Application.Services
     /// </summary>
     public class PermissionService : IPermissionService
     {
-        private readonly IAuditableCommandRepository<Permission> _commandRepository;
-        private readonly IAuditableQueryRepository<Permission> _queryRepository;
+        private readonly IPermissionRepository _permissionRepository;
         private readonly ILogger<PermissionService> _logger;
 
         /// <summary>
@@ -25,12 +24,10 @@ namespace TMS.Application.Services
         /// <param name="queryRepository">The repository for performing auditable permission queries (e.g., get by id).</param>
         /// <param name="logger">The logger for logging permission service events.</param>
         public PermissionService(
-            IAuditableCommandRepository<Permission> commandRepository,
-            IAuditableQueryRepository<Permission> queryRepository,
+            IPermissionRepository permissionRepository,
             ILogger<PermissionService> logger)
         {
-            _commandRepository = commandRepository;
-            _queryRepository = queryRepository;
+            _permissionRepository = permissionRepository;
             _logger = logger;
         }
 
@@ -42,7 +39,7 @@ namespace TMS.Application.Services
             _logger.LogInformation("Creating new permission: {Name}", createDto.Name);
 
             var entity = createDto.ToPermission();
-            await _commandRepository.InsertAsync(entity, cancellationToken);
+            await _permissionRepository.InsertAsync(entity, cancellationToken);
 
             _logger.LogInformation("Permission created with id: {Id}", entity.Id);
 
@@ -54,14 +51,14 @@ namespace TMS.Application.Services
         {
             ArgumentNullException.ThrowIfNull(dto);
 
-            var entity = await _queryRepository.GetByIdAsync(dto.Id, cancellationToken)
+            var entity = await _permissionRepository.GetByIdAsync(dto.Id, cancellationToken)
                 ?? throw new NotFoundException(typeof(Permission));
 
             entity.Name = dto.Name;
             entity.Description = dto.Description;
             entity.UpdateDate = DateTime.UtcNow;
 
-            await _commandRepository.UpdateAsync(entity, cancellationToken);
+            await _permissionRepository.UpdateAsync(entity, cancellationToken);
 
             _logger.LogInformation("Permission with id {Id} updated", dto.Id);
 
@@ -71,7 +68,7 @@ namespace TMS.Application.Services
         /// <inheritdoc/>
         public async Task<PermissionDto> GetByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
         {
-            var entity = await _queryRepository.GetByIdAsync(id, cancellationToken);
+            var entity = await _permissionRepository.GetByIdAsync(id, cancellationToken);
             if (entity == null)
             {
                 _logger.LogWarning("Permission with id {Id} not found", id);
@@ -89,7 +86,7 @@ namespace TMS.Application.Services
                 throw new WrongIdException(typeof(Department));
             }
 
-            await _commandRepository.DeleteAsync(id, cancellationToken);
+            await _permissionRepository.DeleteAsync(id, cancellationToken);
 
             _logger.LogInformation("Department with id {Id} deleted", id);
         }

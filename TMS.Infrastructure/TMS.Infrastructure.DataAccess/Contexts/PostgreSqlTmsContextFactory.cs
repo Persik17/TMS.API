@@ -8,7 +8,10 @@ namespace TMS.Infrastructure.DataAccess.Contexts
         public PostgreSqlTmsContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<PostgreSqlTmsContext>();
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=TMS;Username=postgres;Password=3353");
+
+            var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+            optionsBuilder.UseNpgsql(connectionString);
+
             return new PostgreSqlTmsContext(optionsBuilder.Options);
         }
     }
