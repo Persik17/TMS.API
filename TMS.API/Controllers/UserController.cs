@@ -14,7 +14,7 @@ namespace TMS.API.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly IUserService _userService;
+        private readonly IUserProfileService _userService;
         private readonly ILogger<UserController> _logger;
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace TMS.API.Controllers
         /// <param name="userService">The user service.</param>
         /// <param name="logger">The logger.</param>
         public UserController(
-            IUserService userService,
+            IUserProfileService userService,
             ILogger<UserController> logger)
         {
             _userService = userService;
@@ -59,21 +59,21 @@ namespace TMS.API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(UserDto), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<UserDto>> Create([FromBody] UserCreateDto request, Guid userId, CancellationToken cancellationToken)
-        {
-            if (request == null)
-            {
-                _logger.LogWarning("Create called with null DTO");
-                return BadRequest("User data is required.");
-            }
+        //public async Task<ActionResult<UserDto>> Create([FromBody] UserCreateDto request, Guid userId, CancellationToken cancellationToken)
+        //{
+        //    if (request == null)
+        //    {
+        //        _logger.LogWarning("Create called with null DTO");
+        //        return BadRequest("User data is required.");
+        //    }
 
-            var createDto = new UserCreateDto
-            {
-            };
+        //    var createDto = new UserCreateDto
+        //    {
+        //    };
 
-            var user = await _userService.CreateAsync(createDto, userId, cancellationToken);
-            return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
-        }
+        //    var user = await _userService.CreateAsync(createDto, userId, cancellationToken);
+        //    return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
+        //}
 
         /// <summary>
         /// Updates an existing user.
@@ -115,12 +115,12 @@ namespace TMS.API.Controllers
         /// <returns>No content result.</returns>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> Delete(Guid id, Guid userId, CancellationToken cancellationToken)
-        {
-            _logger.LogInformation("Deleting user with id {Id}", id);
-            await _userService.DeleteAsync(id, userId, cancellationToken);
-            return NoContent();
-        }
+        //public async Task<IActionResult> Delete(Guid id, Guid userId, CancellationToken cancellationToken)
+        //{
+        //    _logger.LogInformation("Deleting user with id {Id}", id);
+        //    await _userService.DeleteAsync(id, userId, cancellationToken);
+        //    return NoContent();
+        //}
 
         /// <summary>
         /// Links a Telegram account to a user.

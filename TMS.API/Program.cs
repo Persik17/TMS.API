@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TMS.API.Configuration;
+using TMS.API.Settings;
 
 namespace TMS.API
 {
@@ -23,6 +24,7 @@ namespace TMS.API
 
             // Configure services
             ConfigureServices.Apply(builder);
+            builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("CacheSettings"));
 
             // Add controllers, API explorer, and Swagger
             builder.Services.AddControllers();
@@ -68,6 +70,7 @@ namespace TMS.API
             });
 
             var app = builder.Build();
+            app.UseCors("AllowSpecificOrigin");
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -79,7 +82,7 @@ namespace TMS.API
             app.UseHttpsRedirection();
 
             // Apply global exception handling
-            ConfigureMiddlewares.Apply(app);
+            //ConfigureMiddlewares.Apply(app);
 
             app.UseAuthentication();
             app.UseAuthorization();

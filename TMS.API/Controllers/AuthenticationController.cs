@@ -207,9 +207,10 @@ namespace TMS.API.Controllers
 
             return Ok(new ConfirmationResultViewModel
             {
-                Success = result.Success,
-                Error = result.Error,
-                Token = result.Token
+                Success = true,
+                Token = result.Token,
+                UserId = result.UserId,
+                CompanyId = result.CompanyId
             });
         }
     }

@@ -142,7 +142,7 @@ namespace TMS.API.Controllers
                     return BadRequest(new ConfirmationResultViewModel
                     {
                         Success = false,
-                        Error = result.Error
+                        Error = result.Error,
                     });
                 }
 
@@ -150,7 +150,9 @@ namespace TMS.API.Controllers
                 return Ok(new ConfirmationResultViewModel
                 {
                     Success = true,
-                    Token = result.Token
+                    Token = result.Token,
+                    UserId = result.UserId,
+                    CompanyId = result.CompanyId
                 });
             }
             catch (Exception ex)

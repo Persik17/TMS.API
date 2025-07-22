@@ -28,10 +28,8 @@ namespace TMS.API.Configuration
             builder.Services.AddDbContext<PostgreSqlTmsContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("POSTGRES_CONNECTION_STRING")));
 
             var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING");
-            Console.WriteLine($"[DEBUG] REDIS_CONNECTION_STRING = '{redisConnection}'");
-            builder.Services.AddSingleton<IConnectionMultiplexer>(
-                ConnectionMultiplexer.Connect(redisConnection)
-            );
+            builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
+
             builder.Services.AddTransient<IRedisCacheContext, RedisCacheContext>();
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TMS.API.ViewModels.Board;
 using TMS.API.ViewModels.Company;
 using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto.Company;
@@ -15,16 +16,16 @@ namespace TMS.API.Controllers
     public class CompanyController : ControllerBase
     {
         private readonly ICompanyService _companyService;
+        private readonly ICompanyInfoService _companyInfoService;
         private readonly ILogger<CompanyController> _logger;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CompanyController"/> class.
-        /// </summary>
         public CompanyController(
             ICompanyService companyService,
+            ICompanyInfoService companyInfoService,
             ILogger<CompanyController> logger)
         {
             _companyService = companyService;
+            _companyInfoService = companyInfoService;
             _logger = logger;
         }
 
@@ -226,6 +227,46 @@ namespace TMS.API.Controllers
             _logger.LogInformation("Company with id {Id} deleted by user {UserId}", id, userId);
 
             return NoContent();
+        }
+
+        [HttpGet("info")]
+        public async Task<ActionResult<CompanyInfoViewModel>> GetCompanyInfoByUserId(
+            [FromQuery] Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("Request to get company info for user {UserId}", userId);
+
+            var companyInfoDto = await _companyInfoService.GetCompanyInfoByUserId(userId, cancellationToken);
+            if (companyInfoDto == null)
+            {
+                _logger.LogWarning("No company info found for user {UserId}", userId);
+                return NotFound($"No company info found for user {userId}.");
+            }
+
+            var viewModel = new CompanyInfoViewModel
+            {
+                Id = companyInfoDto.Id,
+                Name = companyInfoDto.Name,
+                Logo = companyInfoDto.Logo,
+                INN = companyInfoDto.INN,
+                OGRN = companyInfoDto.OGRN,
+                Address = companyInfoDto.Address,
+                Website = companyInfoDto.Website,
+                Industry = companyInfoDto.Industry,
+                Description = companyInfoDto.Description,
+                ContactEmail = companyInfoDto.ContactEmail,
+                ContactPhone = companyInfoDto.ContactPhone,
+                IsActive = companyInfoDto.IsActive,
+                Boards = companyInfoDto.Boards.Select(b => new BoardInfoViewModel
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                    OwnerFullName = b.OwnerFullName,
+                    IsPrivate = b.IsPrivate
+                }).ToList()
+            };
+
+            return Ok(viewModel);
         }
     }
 }

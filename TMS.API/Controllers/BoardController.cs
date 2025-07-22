@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using TMS.API.ViewModels.Board;
 using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto.Board;
-using TMS.Infrastructure.DataModels;
 
 namespace TMS.API.Controllers
 {
@@ -12,38 +11,37 @@ namespace TMS.API.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/companies/{companyId}/boards")]
     public class BoardController : ControllerBase
     {
         private readonly IBoardService _boardService;
+        private readonly IBoardInfoService _boardInfoService;
         private readonly ILogger<BoardController> _logger;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BoardController"/> class.
-        /// </summary>
-        /// <param name="boardService">The board service.</param>
-        /// <param name="logger">The logger.</param>
         public BoardController(
             IBoardService boardService,
+            IBoardInfoService boardInfoService,
             ILogger<BoardController> logger)
         {
             _boardService = boardService;
+            _boardInfoService = boardInfoService;
             _logger = logger;
         }
 
         /// <summary>
-        /// Retrieves a board by its ID.
+        /// Retrieves a board by its ID (basic info).
         /// </summary>
-        /// <param name="id">The ID of the board to retrieve.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-        /// <returns>An <see cref="IActionResult"/> representing the retrieved board or a 404 Not Found if the board does not exist.</returns>
-        [HttpGet("{id:guid}")]
-        public async Task<ActionResult<BoardViewModel>> GetById(Guid id, Guid userId, CancellationToken cancellationToken)
+        [HttpGet("{boardId:guid}")]
+        public async Task<ActionResult<BoardViewModel>> GetById(
+            Guid companyId,
+            Guid boardId,
+            Guid userId,
+            CancellationToken cancellationToken)
         {
-            var board = await _boardService.GetByIdAsync(id, userId, cancellationToken);
+            var board = await _boardService.GetByIdAsync(boardId, userId, cancellationToken);
             if (board == null)
             {
-                _logger.LogWarning("Board with id {Id} not found", id);
+                _logger.LogWarning("Board with id {Id} not found", boardId);
                 return NotFound();
             }
 
@@ -52,7 +50,7 @@ namespace TMS.API.Controllers
                 Id = board.Id,
                 Name = board.Name,
                 Description = board.Description,
-                DepartmentId = board.DepartmentId,
+                CompanyId = board.CompanyId,
                 BoardType = board.BoardType,
                 IsPrivate = board.IsPrivate,
                 CreationDate = board.CreationDate,
@@ -64,13 +62,33 @@ namespace TMS.API.Controllers
         }
 
         /// <summary>
+        /// Retrieves board info with columns, tasks and task types.
+        /// </summary>
+        [HttpGet("{boardId:guid}/info")]
+        public async Task<ActionResult<BoardSummaryInfoDto>> GetBoardInfo(
+            Guid companyId,
+            Guid boardId,
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            var boardInfo = await _boardInfoService.GetBoardInfoAsync(boardId, userId, companyId, cancellationToken);
+            if (boardInfo == null)
+            {
+                _logger.LogWarning("Board info for id {Id} not found", boardId);
+                return NotFound();
+            }
+            return Ok(boardInfo);
+        }
+
+        /// <summary>
         /// Creates a new board.
         /// </summary>
-        /// <param name="request">The request containing the data for the new board.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-        /// <returns>An <see cref="IActionResult"/> representing the newly created board.</returns>
         [HttpPost]
-        public async Task<ActionResult<BoardViewModel>> Create([FromBody] BoardViewModel request, Guid userId, CancellationToken cancellationToken)
+        public async Task<ActionResult<BoardViewModel>> Create(
+            Guid companyId,
+            [FromBody] BoardViewModel request,
+            Guid userId,
+            CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -82,7 +100,7 @@ namespace TMS.API.Controllers
             {
                 Name = request.Name,
                 Description = request.Description,
-                DepartmentId = request.DepartmentId,
+                CompanyId = request.CompanyId,
                 BoardType = request.BoardType,
                 IsPrivate = request.IsPrivate
             };
@@ -94,7 +112,7 @@ namespace TMS.API.Controllers
                 Id = board.Id,
                 Name = board.Name,
                 Description = board.Description,
-                DepartmentId = board.DepartmentId,
+                CompanyId = board.CompanyId,
                 BoardType = board.BoardType,
                 IsPrivate = board.IsPrivate,
                 CreationDate = board.CreationDate,
@@ -102,27 +120,28 @@ namespace TMS.API.Controllers
                 DeleteDate = board.DeleteDate
             };
 
-            return CreatedAtAction(nameof(GetById), new { id = board.Id }, viewModel);
+            return Ok(viewModel); // Используем Ok, чтобы избежать ошибки с CreatedAtAction
         }
 
         /// <summary>
         /// Updates an existing board.
         /// </summary>
-        /// <param name="id">The ID of the board to update.</param>
-        /// <param name="request">The request containing the updated data for the board.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-        /// <returns>An <see cref="IActionResult"/> representing the result of the update operation.</returns>
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] BoardViewModel request, Guid userId, CancellationToken cancellationToken)
+        [HttpPut("{boardId:guid}")]
+        public async Task<IActionResult> Update(
+            Guid companyId,
+            Guid boardId,
+            [FromBody] BoardViewModel request,
+            Guid userId,
+            CancellationToken cancellationToken)
         {
             if (request == null)
             {
                 _logger.LogWarning("Update called with null model");
                 return BadRequest("Board data is required.");
             }
-            if (id != request.Id)
+            if (boardId != request.Id)
             {
-                _logger.LogWarning("Update id mismatch: route id {RouteId}, body id {BodyId}", id, request.Id);
+                _logger.LogWarning("Update id mismatch: route id {RouteId}, body id {BodyId}", boardId, request.Id);
                 return BadRequest("ID mismatch");
             }
 
@@ -131,7 +150,7 @@ namespace TMS.API.Controllers
                 Id = request.Id,
                 Name = request.Name,
                 Description = request.Description,
-                DepartmentId = request.DepartmentId,
+                CompanyId = request.CompanyId,
                 BoardType = request.BoardType,
                 IsPrivate = request.IsPrivate,
                 CreationDate = request.CreationDate,
@@ -146,15 +165,51 @@ namespace TMS.API.Controllers
         /// <summary>
         /// Deletes a board.
         /// </summary>
-        /// <param name="id">The ID of the board to delete.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-        /// <returns>An <see cref="IActionResult"/> representing the result of the delete operation.</returns>
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> Delete(Guid id, Guid userId, CancellationToken cancellationToken)
+        [HttpDelete("{boardId:guid}")]
+        public async Task<IActionResult> Delete(
+            Guid companyId,
+            Guid boardId,
+            Guid userId,
+            CancellationToken cancellationToken)
         {
-            //NOTE: Add check for valid id before deletion.
-            await _boardService.DeleteAsync(id, userId, cancellationToken);
+            await _boardService.DeleteAsync(boardId, userId, cancellationToken);
             return NoContent();
+        }
+
+        /// <summary>
+        /// Retrieves all boards for a company.
+        /// </summary>
+        [HttpGet]
+        public async Task<ActionResult<List<BoardViewModel>>> GetBoards(
+            [FromRoute] Guid companyId,
+            [FromQuery] Guid userId,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var boards = await _boardService.GetBoardsByCompanyIdAsync(companyId, userId, cancellationToken);
+                var viewModels = boards.Select(board => new BoardViewModel
+                {
+                    Id = board.Id,
+                    Name = board.Name,
+                    Description = board.Description,
+                    CompanyId = board.CompanyId,
+                    HeadFullName = board.HeadFullName,
+                    BoardType = board.BoardType,
+                    IsPrivate = board.IsPrivate,
+                    CreationDate = board.CreationDate,
+                    UpdateDate = board.UpdateDate,
+                    DeleteDate = board.DeleteDate
+                }).ToList();
+
+                return Ok(viewModels);
+            }
+            catch (Exception ex)
+            {
+                // Логируй ошибку и верни подробности прямо в ответе!
+                _logger.LogError(ex, "Error in GetBoards");
+                return StatusCode(500, ex.ToString());
+            }
         }
     }
 }
