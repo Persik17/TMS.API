@@ -12,9 +12,9 @@ namespace TMS.Application.Extensions
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
                 Description = dto.Description,
-                DepartmentId = dto.DepartmentId,
+                CompanyId = dto.CompanyId,
                 IsPrivate = dto.IsPrivate,
-                CreationDate = DateTime.UtcNow
+                CreationDate = DateTime.UtcNow,
             };
         }
 
@@ -25,7 +25,7 @@ namespace TMS.Application.Extensions
                 Id = board.Id,
                 Name = board.Name,
                 Description = board.Description,
-                DepartmentId = board.DepartmentId,
+                CompanyId = board.CompanyId,
                 IsPrivate = board.IsPrivate,
                 CreationDate = board.CreationDate,
                 UpdateDate = board.UpdateDate,

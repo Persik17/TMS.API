@@ -131,14 +131,14 @@ namespace TMS.Application.Services
                 };
                 await _credentialRepository.InsertAsync(credential, cancellationToken);
 
-                await _notifyService.PublishAsync(new UserVerificationCreatedEvent
-                {
-                    VerificationId = verification.Id,
-                    Target = verification.Email,
-                    Code = verification.Code,
-                    Expiration = verification.Expiration,
-                    Message = "Ваш код подтверждения"
-                }, cancellationToken);
+                //await _notifyService.PublishAsync(new UserVerificationCreatedEvent
+                //{
+                //    VerificationId = verification.Id,
+                //    Target = verification.Email,
+                //    Code = verification.Code,
+                //    Expiration = verification.Expiration,
+                //    Message = "Ваш код подтверждения"
+                //}, cancellationToken);
 
                 // await transaction.CommitAsync(cancellationToken);
 

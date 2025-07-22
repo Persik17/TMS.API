@@ -7,6 +7,7 @@ using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto.Verification;
 using TMS.Application.Extensions;
 using TMS.Infrastructure.Abstractions.Repositories;
+using TMS.Infrastructure.DataModels;
 
 namespace TMS.Application.Services
 {
@@ -16,10 +17,10 @@ namespace TMS.Application.Services
     public class VerificationService : IVerificationService
     {
         private readonly IUserVerificationRepository _userVerificationRepository;
+        private readonly IUserInvitationRepository _userInvitationRepository;
+        private readonly ICompanyRepository _companyRepository;
+        private readonly IRoleRepository _roleRepository;
         private readonly IUserRepository _userRepository;
-        private readonly IBoardRepository _boardRepository;
-        private readonly IColumnRepository _boardColumnRepository;
-        private readonly IUserFactory _userFactory;
         private readonly ITokenService _tokenService;
         private readonly ILogger<VerificationService> _logger;
 
@@ -32,19 +33,19 @@ namespace TMS.Application.Services
         /// <param name="logger">The logger for logging verification service events.</param>
         public VerificationService(
             IUserVerificationRepository userVerificationRepository,
+            IUserInvitationRepository userInvitationRepository,
+            ICompanyRepository companyRepository,
+            IRoleRepository roleRepository,
             IUserRepository userRepository,
-            IBoardRepository boardRepository,
-            IColumnRepository boardColumnRepository,
             ITokenService tokenService,
-            IUserFactory userFactory,
             ILogger<VerificationService> logger)
         {
             _userVerificationRepository = userVerificationRepository ?? throw new ArgumentNullException(nameof(userVerificationRepository));
+            _userInvitationRepository = userInvitationRepository ?? throw new ArgumentNullException(nameof(userInvitationRepository));
+            _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
+            _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _boardRepository = boardRepository ?? throw new ArgumentNullException(nameof(boardRepository));
-            _boardColumnRepository = boardColumnRepository ?? throw new ArgumentNullException(nameof(boardColumnRepository));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
-            _userFactory = userFactory ?? throw new ArgumentNullException(nameof(userFactory));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -103,7 +104,7 @@ namespace TMS.Application.Services
 
                 _logger.LogInformation("User logged in successfully, generating token.");
 
-                return new ConfirmationResultDto { Success = true, Token = token };
+                return new ConfirmationResultDto { Success = true, Token = token, CompanyId = user.CompanyId, UserId = user.Id };
             }
             catch (NotFoundException nfEx)
             {
@@ -176,6 +177,14 @@ namespace TMS.Application.Services
                     return new ConfirmationResultDto { Success = false, Error = "User not found." };
                 }
 
+                // Проверка UserInvitation
+                var invitation = await _userInvitationRepository.GetByEmailAsync(user.Email, cancellationToken);
+                if (invitation != null)
+                {
+                    _logger.LogWarning("User already invited: {Email}", user.Email);
+                    return new ConfirmationResultDto { Success = false, Error = "User already invited." };
+                }
+
                 if (user.Status == (int)UserStatus.Active)
                 {
                     _logger.LogInformation("User already active for email: {Email}", user.Email);
@@ -191,11 +200,39 @@ namespace TMS.Application.Services
                 user.Status = (int)UserStatus.Active;
                 await _userRepository.UpdateAsync(user, cancellationToken);
 
+                // Создаём компанию и роль Owner для пользователя
+                var company = new Company
+                {
+                    Id = Guid.NewGuid(),
+                    Name = $"{user.FullName ?? user.Email}'s Company",
+                    OwnerId = user.Id,
+                    ContactEmail = user.Email,
+                    CreationDate = DateTime.UtcNow,
+                    Users = new List<User> { user }
+                };
+                await _companyRepository.InsertAsync(company, cancellationToken);
+
+                var ownerRole = await _roleRepository.GetByNameAsync("Owner", cancellationToken);
+                if (ownerRole == null)
+                {
+                    ownerRole = new Role
+                    {
+                        Id = Guid.NewGuid(),
+                        CreationDate = DateTime.UtcNow,
+                        Name = "Owner",
+                        Description = "Company's owner"
+                    };
+                    await _roleRepository.InsertAsync(ownerRole, cancellationToken);
+                }
+                user.RoleId = ownerRole.Id;
+                user.CompanyId = company.Id;
+                await _userRepository.UpdateAsync(user, cancellationToken);
+
                 var token = _tokenService.GenerateToken(user.ToUserDto());
 
-                _logger.LogInformation("User {Email} activated and token generated.", user.Email);
+                _logger.LogInformation("User {Email} activated, company and owner role created, token generated.", user.Email);
 
-                return new ConfirmationResultDto { Success = true, Token = token };
+                return new ConfirmationResultDto { Success = true, Token = token, CompanyId = user.CompanyId, UserId = user.Id };
             }
             catch (NotFoundException nfEx)
             {

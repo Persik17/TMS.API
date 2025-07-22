@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using TMS.Abstractions.Enums;
-using TMS.Application.Abstractions.Cache;
 using TMS.Application.Abstractions.Services;
 using TMS.Infrastructure.Abstractions.Repositories;
 
@@ -8,25 +7,23 @@ namespace TMS.Application.Security
 {
     public class AccessService : IAccessService
     {
-        private readonly IMembershipRepository _membershipRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IBoardRepository _boardRepository;
+        private readonly ICompanyRepository _companyRepository;
         private readonly IRoleRepository _roleRepository;
-        private readonly IRolePermissionRepository _rolePermissionRepository;
-        private readonly ICacheService _cacheService;
         private readonly ILogger<AccessService> _logger;
 
-        private static readonly TimeSpan CacheExpiry = TimeSpan.FromMinutes(10);
-
         public AccessService(
-            IMembershipRepository membershipRepository,
+            IUserRepository userRepository,
+            IBoardRepository boardRepository,
+            ICompanyRepository companyRepository,
             IRoleRepository roleRepository,
-            IRolePermissionRepository rolePermissionRepository,
-            ICacheService cacheService,
             ILogger<AccessService> logger)
         {
-            _membershipRepository = membershipRepository ?? throw new ArgumentNullException(nameof(membershipRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _boardRepository = boardRepository ?? throw new ArgumentNullException(nameof(boardRepository));
+            _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
-            _rolePermissionRepository = rolePermissionRepository ?? throw new ArgumentNullException(nameof(rolePermissionRepository));
-            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -34,41 +31,52 @@ namespace TMS.Application.Security
             Guid userId,
             Guid resourceId,
             ResourceType resourceType,
-            string permissionName,
             CancellationToken cancellationToken = default)
         {
-            var cachedPermissions = await _cacheService.GetAsync<List<string>>(CacheKeys.Permissions(userId, resourceType, resourceId));
-            if (cachedPermissions != null)
+            var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+            if (user == null)
             {
-                _logger.LogDebug("Permissions for ({UserId},{ResourceId},{ResourceType}) found in cache.", userId, resourceId, resourceType);
-                return cachedPermissions.Contains(permissionName, StringComparer.OrdinalIgnoreCase);
-            }
-
-            var membership = await _membershipRepository.GetUserMembershipAsync(userId, resourceId, (int)resourceType, cancellationToken);
-            if (membership == null)
-            {
-                _logger.LogDebug("No membership for ({UserId},{ResourceId},{ResourceType})", userId, resourceId, resourceType);
+                _logger.LogWarning("User {UserId} not found", userId);
                 return false;
             }
 
-            var role = await _roleRepository.GetByIdAsync(membership.RoleId, cancellationToken);
+            var role = await _roleRepository.GetByIdAsync((Guid)user.RoleId);
             if (role == null)
             {
-                _logger.LogWarning("Role {RoleId} for membership not found", membership.RoleId);
+                _logger.LogWarning("User {UserId} has no role", userId);
                 return false;
             }
 
-            var permissions = await _rolePermissionRepository.GetPermissionsByRoleIdAsync(role.Id, cancellationToken);
-            var permissionNames = permissions
-                .Where(p => p.DeleteDate == null)
-                .Select(p => p.Name)
-                .Distinct()
-                .ToList();
+            if (role.Name.Equals("Owner", StringComparison.OrdinalIgnoreCase) ||
+                role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                // Owner и Admin видят всё
+                return true;
+            }
 
-            await _cacheService.SetAsync(CacheKeys.Permissions(userId, resourceType, resourceId), permissionNames, CacheExpiry);
+            // 3. Пользователь — проверяем доступ к ресурсу
+            switch (resourceType)
+            {
+                case ResourceType.Company:
+                    var company = await _companyRepository.GetByIdAsync(resourceId, cancellationToken);
+                    if (company == null) return false;
+                    if (company.OwnerId == user.Id) return true;
+                    break;
 
-            // 6. Проверяем наличие нужного permission
-            return permissionNames.Contains(permissionName, StringComparer.OrdinalIgnoreCase);
+                case ResourceType.Board:
+                    var board = await _boardRepository.GetByIdAsync(resourceId, cancellationToken);
+                    if (board == null) return false;
+                    if (board.HeadId == user.Id) return true;
+                    if (board.Users.Any(u => u.Id == user.Id)) return true;
+                    break;
+
+                case ResourceType.Column:
+                case ResourceType.User:
+                    break;
+            }
+
+            // Если ничего не совпало — нет доступа
+            return false;
         }
     }
 }

@@ -33,5 +33,4 @@ namespace TMS.Application.Messaging
             await _publishEndpoint.Publish(@event, cancellationToken);
         }
     }
-
 }

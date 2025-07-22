@@ -6,7 +6,9 @@ using TMS.Infrastructure.Abstractions.Cache;
 namespace TMS.Application.Cache
 {
     /// <summary>
-    /// Реализация репозитория для работы с Redis кэшем
+    /// Service for interacting with Redis cache storage.
+    /// Provides methods for storing, retrieving, checking existence, removing, and clearing cached data.
+    /// Handles serialization and deserialization of objects to and from JSON.
     /// </summary>
     public class CacheService : ICacheService
     {
@@ -14,6 +16,11 @@ namespace TMS.Application.Cache
         private readonly ILogger<CacheService> _logger;
         private readonly JsonSerializerOptions _jsonOptions;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CacheService"/> class.
+        /// </summary>
+        /// <param name="cacheContext">The Redis cache context for low-level cache operations.</param>
+        /// <param name="logger">The logger for logging cache events and errors.</param>
         public CacheService(
             IRedisCacheContext cacheContext,
             ILogger<CacheService> logger)
@@ -28,6 +35,7 @@ namespace TMS.Application.Cache
             };
         }
 
+        /// <inheritdoc/>
         public async Task<T> GetAsync<T>(string key) where T : class
         {
             try
@@ -52,6 +60,7 @@ namespace TMS.Application.Cache
             }
         }
 
+        /// <inheritdoc/>
         public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null) where T : class
         {
             if (value == null)
@@ -74,6 +83,7 @@ namespace TMS.Application.Cache
             }
         }
 
+        /// <inheritdoc/>
         public async Task RemoveAsync(string key)
         {
             try
@@ -86,6 +96,7 @@ namespace TMS.Application.Cache
             }
         }
 
+        /// <inheritdoc/>
         public async Task<bool> ExistsAsync(string key)
         {
             try
@@ -99,6 +110,7 @@ namespace TMS.Application.Cache
             }
         }
 
+        /// <inheritdoc/>
         public async Task ClearAllAsync()
         {
             try

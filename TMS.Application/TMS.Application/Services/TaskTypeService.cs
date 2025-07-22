@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
+using TMS.Abstractions.Enums;
 using TMS.Abstractions.Exceptions;
+using TMS.Application.Abstractions.Cache;
+using TMS.Application.Abstractions.Security;
 using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto.TaskType;
 using TMS.Application.Extensions;
@@ -15,38 +18,48 @@ namespace TMS.Application.Services
     public class TaskTypeService : ITaskTypeService
     {
         private readonly ITaskTypeRepository _taskTypeRepository;
+        private readonly IAccessService _accessService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<TaskTypeService> _logger;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TaskTypeService"/> class.
-        /// </summary>
-        /// <param name="commandRepository">The repository for performing auditable task type commands (e.g., insert, update).</param>
-        /// <param name="queryRepository">The repository for performing auditable task type queries (e.g., get by id).</param>
-        /// <param name="logger">The logger for logging task type service events.</param>
+        private static readonly TimeSpan TaskTypeCacheExpiry = TimeSpan.FromDays(30);
+
         public TaskTypeService(
             ITaskTypeRepository taskTypeRepository,
+            IAccessService accessService,
+            ICacheService cacheService,
             ILogger<TaskTypeService> logger)
         {
-            _taskTypeRepository = taskTypeRepository;
-            _logger = logger;
+            _taskTypeRepository = taskTypeRepository ?? throw new ArgumentNullException(nameof(taskTypeRepository));
+            _accessService = accessService ?? throw new ArgumentNullException(nameof(accessService));
+            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        /// <inheritdoc/>
         public async Task<TaskTypeDto> CreateAsync(TaskTypeCreateDto createDto, Guid userId, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(createDto);
+
+            // Проверяем доступ к доске
+            if (!await _accessService.HasPermissionAsync(userId, Guid.Empty, ResourceType.Board, cancellationToken))
+            {
+                _logger.LogWarning("User {UserId} has no permission to create task type on board {BoardId}", userId, Guid.Empty);
+                throw new ForbiddenException();
+            }
 
             _logger.LogInformation("Creating new task type: {Name}", createDto.Name);
 
             var entity = createDto.ToTaskType();
             await _taskTypeRepository.InsertAsync(entity, cancellationToken);
 
+            var dto = entity.ToTaskTypeDto();
+            await _cacheService.SetAsync(CacheKeys.TaskType(entity.Id), dto, TaskTypeCacheExpiry);
+
             _logger.LogInformation("TaskType created with id: {Id}", entity.Id);
 
-            return entity.ToTaskTypeDto();
+            return dto;
         }
 
-        /// <inheritdoc/>
         public async Task<TaskTypeDto> UpdateAsync(TaskTypeDto dto, Guid userId, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
@@ -54,34 +67,79 @@ namespace TMS.Application.Services
             var entity = await _taskTypeRepository.GetByIdAsync(dto.Id, cancellationToken)
                 ?? throw new NotFoundException(typeof(TaskType));
 
+            // Проверяем доступ к доске
+            if (!await _accessService.HasPermissionAsync(userId, entity.BoardId, ResourceType.Board, cancellationToken))
+            {
+                _logger.LogWarning("User {UserId} has no permission to update task type {TaskTypeId} on board {BoardId}", userId, dto.Id, entity.BoardId);
+                throw new ForbiddenException();
+            }
+
             entity.Name = dto.Name;
             entity.Description = dto.Description;
             entity.UpdateDate = DateTime.UtcNow;
 
             await _taskTypeRepository.UpdateAsync(entity, cancellationToken);
 
+            var updatedDto = entity.ToTaskTypeDto();
+            await _cacheService.SetAsync(CacheKeys.TaskType(dto.Id), updatedDto, TaskTypeCacheExpiry);
+
             _logger.LogInformation("TaskType with id {Id} updated", dto.Id);
 
-            return entity.ToTaskTypeDto();
+            return updatedDto;
         }
 
-        /// <inheritdoc/>
         public async Task<TaskTypeDto> GetByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
         {
+            var cacheKey = CacheKeys.TaskType(id);
+            var cached = await _cacheService.GetAsync<TaskTypeDto>(cacheKey);
+            if (cached != null)
+            {
+                _logger.LogDebug("TaskType with id {Id} found in cache", id);
+                return cached;
+            }
+
             var entity = await _taskTypeRepository.GetByIdAsync(id, cancellationToken);
             if (entity == null)
             {
                 _logger.LogWarning("TaskType with id {Id} not found", id);
                 return null;
             }
-            return entity.ToTaskTypeDto();
+
+            // Проверяем доступ к доске
+            if (!await _accessService.HasPermissionAsync(userId, entity.BoardId, ResourceType.Board, cancellationToken))
+            {
+                _logger.LogWarning("User {UserId} has no permission to view task type {TaskTypeId} on board {BoardId}", userId, id, entity.BoardId);
+                throw new ForbiddenException();
+            }
+
+            var dto = entity.ToTaskTypeDto();
+            await _cacheService.SetAsync(cacheKey, dto, TaskTypeCacheExpiry);
+
+            return dto;
         }
 
-        /// <inheritdoc/>
         public async System.Threading.Tasks.Task DeleteAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
         {
+            var entity = await _taskTypeRepository.GetByIdAsync(id, cancellationToken)
+                ?? throw new NotFoundException(typeof(TaskType));
+
+            // Проверяем доступ к доске
+            if (!await _accessService.HasPermissionAsync(userId, entity.BoardId, ResourceType.Board, cancellationToken))
+            {
+                _logger.LogWarning("User {UserId} has no permission to delete task type {TaskTypeId} on board {BoardId}", userId, id, entity.BoardId);
+                throw new ForbiddenException();
+            }
+
             await _taskTypeRepository.DeleteAsync(id, cancellationToken);
+
+            await _cacheService.RemoveAsync(CacheKeys.TaskType(id));
+
             _logger.LogInformation("TaskType with id {Id} deleted", id);
+        }
+
+        public Task<List<TaskTypeDto>> GetTasksByBoardIdAsync(Guid boardId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
         }
     }
 }

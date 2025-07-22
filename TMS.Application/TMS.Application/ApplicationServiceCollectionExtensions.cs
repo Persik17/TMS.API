@@ -25,15 +25,17 @@ namespace TMS.Application
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             services.AddScoped<IBoardService, BoardService>();
+            services.AddScoped<IBoardInfoService, BoardInfoService>();
             services.AddScoped<IColumnService, ColumnService>();
             services.AddScoped<ICompanyService, CompanyService>();
-            services.AddScoped<IDepartmentService, DepartmentService>();
+            services.AddScoped<ICompanyInfoService, CompanyInfoService>();
             services.AddScoped<INotificationSettingService, NotificationSettingService>();
-            services.AddScoped<IPermissionService, PermissionService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<ITaskTypeService, TaskTypeService>();
-            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserProfileService, UserProfileService>();
+            services.AddScoped<IUserAdminService, UserAdminService>();
+            services.AddScoped<IInvitationService, InvitationService>();
             services.AddScoped<IAccessService, AccessService>();
 
             services.AddScoped<IAuthenticationService, AuthenticationService>();

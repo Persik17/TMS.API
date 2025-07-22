@@ -1,4 +1,5 @@
-﻿using TMS.Application.Dto.User;
+﻿using TMS.Abstractions.Enums;
+using TMS.Application.Dto.User;
 using TMS.Infrastructure.DataModels;
 
 namespace TMS.Application.Extensions
@@ -34,11 +35,24 @@ namespace TMS.Application.Extensions
                 Language = user.Language,
                 Phone = user.Phone,
                 Status = user.Status,
-                NotificationSettingsId = (Guid)user.NotificationSettingsId,
+                NotificationSettingsId = user.NotificationSettingsId,
                 LastLoginDate = user.LastLoginDate,
                 CreationDate = user.CreationDate,
                 UpdateDate = user.UpdateDate,
                 DeleteDate = user.DeleteDate
+            };
+        }
+
+        public static User ToUser(this UserInviteDto dto)
+        {
+            return new User
+            {
+                Id = Guid.NewGuid(),
+                FullName = dto.FullName,
+                Email = dto.Email,
+                Language = dto.Language,
+                Status = (int)UserStatus.Invited,
+                CreationDate = DateTime.UtcNow
             };
         }
     }

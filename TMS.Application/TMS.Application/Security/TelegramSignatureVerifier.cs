@@ -25,6 +25,7 @@ namespace TMS.Application.Security
                 { "auth_date", dto.AuthDate.ToString() },
                 { "id", dto.TelegramUserId.ToString() }
             };
+
             if (!string.IsNullOrEmpty(dto.Username)) data.Add("username", dto.Username);
             if (!string.IsNullOrEmpty(dto.FullName)) data.Add("first_name", dto.FullName);
             if (!string.IsNullOrEmpty(dto.Hash)) data.Add("hash", dto.Hash);

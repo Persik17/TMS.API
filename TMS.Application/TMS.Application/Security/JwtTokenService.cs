@@ -29,11 +29,11 @@ namespace TMS.Application.Security
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
-        {
-            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new("userId", user.Id.ToString())
-        };
+            {
+                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+                new("userId", user.Id.ToString())
+            };
 
             var token = new JwtSecurityToken(
                 issuer: _issuer,
@@ -72,7 +72,6 @@ namespace TMS.Application.Security
             }
             catch
             {
-                // логировать по необходимости
             }
             return false;
         }

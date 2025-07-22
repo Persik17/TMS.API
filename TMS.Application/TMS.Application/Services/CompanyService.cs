@@ -6,7 +6,7 @@ using TMS.Application.Abstractions.Security;
 using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto.Company;
 using TMS.Application.Extensions;
-using TMS.Infrastructure.Abstractions.Repositories.BaseRepositories;
+using TMS.Infrastructure.Abstractions.Repositories;
 using TMS.Infrastructure.DataModels;
 
 using Task = System.Threading.Tasks.Task;
@@ -19,8 +19,7 @@ namespace TMS.Application.Services
     /// </summary>
     public class CompanyService : ICompanyService
     {
-        private readonly IAuditableCommandRepository<Company> _commandRepository;
-        private readonly IAuditableQueryRepository<Company> _queryRepository;
+        private readonly ICompanyRepository _companyRepository;
         private readonly IAccessService _accessService;
         private readonly ICacheService _cacheService;
         private readonly ILogger<CompanyService> _logger;
@@ -34,14 +33,12 @@ namespace TMS.Application.Services
         /// <param name="queryRepository">The repository for performing auditable company queries (e.g., get by id).</param>
         /// <param name="logger">The logger for logging company service events.</param>
         public CompanyService(
-            IAuditableCommandRepository<Company> commandRepository,
-            IAuditableQueryRepository<Company> queryRepository,
+            ICompanyRepository companyRepository,
             IAccessService accessService,
             ICacheService cacheService,
             ILogger<CompanyService> logger)
         {
-            _commandRepository = commandRepository ?? throw new ArgumentNullException(nameof(commandRepository));
-            _queryRepository = queryRepository ?? throw new ArgumentNullException(nameof(queryRepository));
+            _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
             _accessService = accessService ?? throw new ArgumentNullException(nameof(accessService));
             _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -58,18 +55,12 @@ namespace TMS.Application.Services
 
             _logger.LogInformation("User {UserId} is creating new company: {Name}", userId, createDto.Name);
 
-            if (!await _accessService.HasPermissionAsync(userId, Guid.Empty, (int)ResourceType.Company, PermissionNames.Company.Create, cancellationToken))
-            {
-                _logger.LogWarning("User {UserId} has no permission to create company", userId);
-                throw new ForbiddenException(PermissionNames.Company.Create);
-            }
-
             var newCompany = createDto.ToCompany();
             newCompany.Id = Guid.NewGuid();
 
-            await _commandRepository.InsertAsync(newCompany, cancellationToken);
+            await _companyRepository.InsertAsync(newCompany, cancellationToken);
 
-            var createdCompany = await _queryRepository.GetByIdAsync(newCompany.Id, cancellationToken);
+            var createdCompany = await _companyRepository.GetByIdAsync(newCompany.Id, cancellationToken);
             if (createdCompany == null)
                 throw new NotFoundException(typeof(Company));
 
@@ -93,10 +84,10 @@ namespace TMS.Application.Services
                 throw new WrongIdException(typeof(Company));
             }
 
-            if (!await _accessService.HasPermissionAsync(userId, id, (int)ResourceType.Company, PermissionNames.Company.View, cancellationToken))
+            if (!await _accessService.HasPermissionAsync(userId, id, ResourceType.Company, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no permission to view company {CompanyId}", userId, id);
-                throw new ForbiddenException(PermissionNames.Company.View);
+                throw new ForbiddenException();
             }
 
             var cacheKey = CacheKeys.Company(id);
@@ -107,7 +98,7 @@ namespace TMS.Application.Services
                 return cachedCompany;
             }
 
-            var company = await _queryRepository.GetByIdAsync(id, cancellationToken);
+            var company = await _companyRepository.GetByIdAsync(id, cancellationToken);
             if (company == null)
             {
                 _logger.LogWarning("Company with id {Id} not found", id);
@@ -135,13 +126,13 @@ namespace TMS.Application.Services
                 throw new WrongIdException(typeof(Company));
             }
 
-            if (!await _accessService.HasPermissionAsync(userId, dto.Id, (int)ResourceType.Company, PermissionNames.Company.Edit, cancellationToken))
+            if (!await _accessService.HasPermissionAsync(userId, dto.Id, ResourceType.Company, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no permission to update company {CompanyId}", userId, dto.Id);
-                throw new ForbiddenException(PermissionNames.Company.Edit);
+                throw new ForbiddenException();
             }
 
-            var existingCompany = await _queryRepository.GetByIdAsync(dto.Id, cancellationToken);
+            var existingCompany = await _companyRepository.GetByIdAsync(dto.Id, cancellationToken);
             if (existingCompany == null)
             {
                 _logger.LogWarning("Company with id {Id} not found for update", dto.Id);
@@ -150,7 +141,7 @@ namespace TMS.Application.Services
 
             existingCompany.UpdateFromDto(dto);
 
-            await _commandRepository.UpdateAsync(existingCompany, cancellationToken);
+            await _companyRepository.UpdateAsync(existingCompany, cancellationToken);
 
             var updatedDto = existingCompany.ToCompanyDto();
             await _cacheService.SetAsync(CacheKeys.Company(dto.Id), updatedDto, CompanyCacheExpiry);
@@ -172,13 +163,13 @@ namespace TMS.Application.Services
                 throw new WrongIdException(typeof(Company));
             }
 
-            if (!await _accessService.HasPermissionAsync(userId, id, (int)ResourceType.Company, PermissionNames.Company.Delete, cancellationToken))
+            if (!await _accessService.HasPermissionAsync(userId, id, ResourceType.Company, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no permission to delete company {CompanyId}", userId, id);
-                throw new ForbiddenException(PermissionNames.Company.Delete);
+                throw new ForbiddenException();
             }
 
-            await _commandRepository.DeleteAsync(id, cancellationToken);
+            await _companyRepository.DeleteAsync(id, cancellationToken);
 
             await _cacheService.RemoveAsync(CacheKeys.Company(id));
 
