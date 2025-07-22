@@ -20,7 +20,7 @@ namespace TMS.Infrastructure.DataModels
         [Required]
         public string Description { get; set; }
 
-        public List<RolePermission> RolePermissions { get; set; } = [];
+        public List<User> Users { get; set; } = [];
 
         public Role() { }
     }

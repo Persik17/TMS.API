@@ -27,14 +27,21 @@ namespace TMS.Infrastructure.DataModels
 
         public DateTime? LastLoginDate { get; set; }
 
-
         public Guid? NotificationSettingsId { get; set; }
         public NotificationSetting? NotificationSettings { get; set; }
+
+        public Guid? RoleId { get; set; }
+        public Role? Role { get; set; }
+
+        public Guid? CompanyId { get; set; }
+        public Company? Company { get; set; }
 
         public int Status { get; set; }
 
         [MaxLength(20)]
         public string? Phone { get; set; }
+
+        public List<Board> Boards { get; set; } = [];
 
         public User() { }
     }

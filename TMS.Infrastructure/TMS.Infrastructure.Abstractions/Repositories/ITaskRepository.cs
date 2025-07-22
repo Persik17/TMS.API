@@ -9,7 +9,7 @@ namespace TMS.Infrastructure.Abstractions.Repositories
         IAuditableCommandRepository<DataModels.Task>,
         IAuditableQueryRepository<DataModels.Task>
     {
-        Task<List<DataModels.Task>> GetTasksByColumnId(Guid columnId, CancellationToken cancellationToken = default);
-        Task<List<DataModels.Task>> GetTasksByColumnIds(IEnumerable<Guid> columnIds, CancellationToken cancellationToken = default);
+        Task<List<DataModels.Task>> GetTasksByColumnIdAsync(Guid columnId, CancellationToken cancellationToken = default);
+        Task<List<DataModels.Task>> GetTasksByColumnIdsAsync(IEnumerable<Guid> columnIds, CancellationToken cancellationToken = default);
     }
 }

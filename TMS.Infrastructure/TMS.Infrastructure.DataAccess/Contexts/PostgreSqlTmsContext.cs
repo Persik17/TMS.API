@@ -50,19 +50,9 @@ namespace TMS.Infrastructure.DataAccess.Contexts
         public DbSet<NotificationSetting> NotificationSettings { get; set; }
 
         /// <summary>
-        /// Gets or sets the DbSet for Permission entities.
-        /// </summary>
-        public DbSet<Permission> Permissions { get; set; }
-
-        /// <summary>
         /// Gets or sets the DbSet for Role entities.
         /// </summary>
         public DbSet<Role> Roles { get; set; }
-
-        /// <summary>
-        /// Gets or sets the DbSet for RolePermission entities.
-        /// </summary>
-        public DbSet<RolePermission> RolePermissions { get; set; }
 
         /// <summary>
         /// Gets or sets the DbSet for Task entities.
@@ -80,16 +70,11 @@ namespace TMS.Infrastructure.DataAccess.Contexts
         public DbSet<TelegramAccount> TelegramAccounts { get; set; }
 
         /// <summary>
-        /// Gets or sets the DbSet for Department entities.
-        /// </summary>
-        public DbSet<Department> Departments { get; set; }
-
-        /// <summary>
         /// Gets or sets the DbSet for UserVerification entities.
         /// </summary>
         public DbSet<UserVerification> UserVerifications { get; set; }
 
-        public DbSet<Membership> Memberships { get; set; }
+        public DbSet<UserInvitation> UserInvitations { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PostgreSqlTmsContext"/> class.
@@ -107,6 +92,33 @@ namespace TMS.Infrastructure.DataAccess.Contexts
         /// <param name="modelBuilder">The builder being used to construct the model for this context.</param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Company>()
+                .HasMany(c => c.Users)
+                .WithOne(u => u.Company)
+                .HasForeignKey(u => u.CompanyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Company>()
+                .HasOne(c => c.Owner)
+                .WithMany()
+                .HasForeignKey(c => c.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Board>()
+                .HasOne(b => b.Head)
+                .WithMany()
+                .HasForeignKey(b => b.HeadId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Board>()
+                .HasMany(b => b.Users)
+                .WithMany(u => u.Boards);
+
+            modelBuilder.Entity<Board>()
+                .HasOne(b => b.Company)
+                .WithMany(c => c.Boards)
+                .HasForeignKey(b => b.CompanyId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

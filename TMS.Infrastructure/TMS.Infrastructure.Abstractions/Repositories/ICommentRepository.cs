@@ -7,6 +7,6 @@ namespace TMS.Infrastructure.Abstractions.Repositories
         IAuditableCommandRepository<Comment>, 
         IAuditableQueryRepository<Comment>
     {
-        Task<List<Comment>> GetCommentsByTaskId(Guid taskId, CancellationToken cancellationToken = default);
+        Task<List<Comment>> GetCommentsByTaskIdAsync(Guid taskId, CancellationToken cancellationToken = default);
     }
 }

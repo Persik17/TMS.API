@@ -66,5 +66,12 @@ namespace TMS.Infrastructure.DataAccess.Repositories
 
             return await _context.Users.FirstOrDefaultAsync(c => c.TelegramId == telegramAccountId, cancellationToken);
         }
+
+        public async Task<List<User>> GetUsersByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Users
+                .Where(u => u.CompanyId == companyId && u.DeleteDate == null)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

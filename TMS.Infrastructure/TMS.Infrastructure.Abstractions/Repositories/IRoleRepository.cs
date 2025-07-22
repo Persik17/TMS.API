@@ -10,5 +10,6 @@ namespace TMS.Infrastructure.Abstractions.Repositories
         IAuditableCommandRepository<Role>,
         IAuditableQueryRepository<Role>
     {
+        Task<Role> GetByNameAsync(string name, CancellationToken cancellationToken = default);
     }
 }

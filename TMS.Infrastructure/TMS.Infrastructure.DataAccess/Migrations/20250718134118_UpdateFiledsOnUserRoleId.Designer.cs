@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TMS.Infrastructure.DataAccess.Contexts;
@@ -11,9 +12,11 @@ using TMS.Infrastructure.DataAccess.Contexts;
 namespace TMS.Infrastructure.DataAccess.Migrations
 {
     [DbContext(typeof(PostgreSqlTmsContext))]
-    partial class PostgreSqlTmsContextModelSnapshot : ModelSnapshot
+    [Migration("20250718134118_UpdateFiledsOnUserRoleId")]
+    partial class UpdateFiledsOnUserRoleId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,6 +165,7 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Address")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ContactEmail")
@@ -169,6 +173,7 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ContactPhone")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreationDate")
@@ -178,15 +183,19 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("INN")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Industry")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Logo")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -194,6 +203,7 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("OGRN")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("OwnerId")
@@ -203,6 +213,7 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Website")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");

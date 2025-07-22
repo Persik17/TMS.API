@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TMS.Infrastructure.DataAccess.Contexts;
@@ -11,9 +12,11 @@ using TMS.Infrastructure.DataAccess.Contexts;
 namespace TMS.Infrastructure.DataAccess.Migrations
 {
     [DbContext(typeof(PostgreSqlTmsContext))]
-    partial class PostgreSqlTmsContextModelSnapshot : ModelSnapshot
+    [Migration("20250718131441_UpdateRoleStructure")]
+    partial class UpdateRoleStructure
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +24,6 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("BoardUser", b =>
-                {
-                    b.Property<Guid>("BoardsId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UsersId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("BoardsId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("BoardUser");
-                });
 
             modelBuilder.Entity("TMS.Infrastructure.DataModels.Board", b =>
                 {
@@ -162,6 +150,7 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Address")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ContactEmail")
@@ -169,6 +158,7 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ContactPhone")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreationDate")
@@ -178,15 +168,19 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("INN")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Industry")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Logo")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -194,6 +188,7 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("OGRN")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("OwnerId")
@@ -203,6 +198,7 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Website")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -503,7 +499,10 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("CompanyId")
+                    b.Property<Guid?>("BoardId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreationDate")
@@ -534,7 +533,7 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<Guid?>("RoleId")
+                    b.Property<Guid>("RoleId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Status")
@@ -550,6 +549,8 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BoardId");
 
                     b.HasIndex("CompanyId");
 
@@ -646,33 +647,18 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                     b.ToTable("UserVerifications");
                 });
 
-            modelBuilder.Entity("BoardUser", b =>
-                {
-                    b.HasOne("TMS.Infrastructure.DataModels.Board", null)
-                        .WithMany()
-                        .HasForeignKey("BoardsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TMS.Infrastructure.DataModels.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("TMS.Infrastructure.DataModels.Board", b =>
                 {
                     b.HasOne("TMS.Infrastructure.DataModels.Company", "Company")
                         .WithMany("Boards")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TMS.Infrastructure.DataModels.User", "Head")
                         .WithMany()
                         .HasForeignKey("HeadId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Company");
@@ -811,10 +797,15 @@ namespace TMS.Infrastructure.DataAccess.Migrations
 
             modelBuilder.Entity("TMS.Infrastructure.DataModels.User", b =>
                 {
+                    b.HasOne("TMS.Infrastructure.DataModels.Board", null)
+                        .WithMany("Users")
+                        .HasForeignKey("BoardId");
+
                     b.HasOne("TMS.Infrastructure.DataModels.Company", "Company")
                         .WithMany("Users")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("TMS.Infrastructure.DataModels.NotificationSetting", "NotificationSettings")
                         .WithMany()
@@ -822,7 +813,9 @@ namespace TMS.Infrastructure.DataAccess.Migrations
 
                     b.HasOne("TMS.Infrastructure.DataModels.Role", "Role")
                         .WithMany("Users")
-                        .HasForeignKey("RoleId");
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("TMS.Infrastructure.DataModels.TelegramAccount", "Telegram")
                         .WithMany()
@@ -851,6 +844,8 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                     b.Navigation("Columns");
 
                     b.Navigation("TaskTypes");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("TMS.Infrastructure.DataModels.Company", b =>

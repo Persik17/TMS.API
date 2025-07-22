@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TMS.Infrastructure.Abstractions.Repositories.BaseRepositories;
+using TMS.Infrastructure.Abstractions.Repositories;
 using TMS.Infrastructure.DataAccess.Contexts;
 using TMS.Infrastructure.DataModels;
 
 namespace TMS.Infrastructure.DataAccess.Repositories
 {
-    public class CompanyRepository : IAuditableCommandRepository<Company>, IAuditableQueryRepository<Company>
+    public class CompanyRepository : ICompanyRepository
     {
         private readonly PostgreSqlTmsContext _context;
 
@@ -44,6 +44,14 @@ namespace TMS.Infrastructure.DataAccess.Repositories
                 entity.DeleteDate = DateTime.UtcNow;
                 await _context.SaveChangesAsync(cancellationToken);
             }
+        }
+
+        public async Task<Company?> GetCompanyByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Companies
+                .Include(c => c.Users)
+                .Where(c => c.DeleteDate == null && (c.OwnerId == userId || c.Users.Any(u => u.Id == userId)))
+                .FirstOrDefaultAsync(cancellationToken);
         }
     }
 }

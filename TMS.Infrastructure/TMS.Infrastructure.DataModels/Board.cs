@@ -20,12 +20,17 @@ namespace TMS.Infrastructure.DataModels
         public string Description { get; set; }
 
         [Required]
-        public Guid DepartmentId { get; set; }
-        public Department Department { get; set; }
+        public Guid CompanyId { get; set; }
+        public Company Company { get; set; }
+
+        [Required]
+        public Guid HeadId { get; set; }
+        public User Head { get; set; }
 
         [Required]
         public bool IsPrivate { get; set; }
 
+        public List<User> Users { get; set; } = [];
         public List<Column> Columns { get; set; } = [];
         public List<TaskType> TaskTypes { get; set; } = [];
 

@@ -46,7 +46,7 @@ namespace TMS.Infrastructure.DataAccess.Repositories
             }
         }
 
-        public async Task<List<Comment>> GetCommentsByTaskId(Guid taskId, CancellationToken cancellationToken = default)
+        public async Task<List<Comment>> GetCommentsByTaskIdAsync(Guid taskId, CancellationToken cancellationToken = default)
         {
             return await _context.Comments.Where(x => x.TaskId == taskId && x.DeleteDate == null).ToListAsync(cancellationToken);
         }

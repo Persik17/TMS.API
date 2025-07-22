@@ -7,6 +7,6 @@ namespace TMS.Infrastructure.Abstractions.Repositories
         IAuditableCommandRepository<Column>,
         IAuditableQueryRepository<Column>
     {
-        Task<List<Column>> GetColumnsByBoardId(Guid boardId, CancellationToken cancellationToken = default);
+        Task<List<Column>> GetColumnsByBoardIdAsync(Guid boardId, CancellationToken cancellationToken = default);
     }
 }

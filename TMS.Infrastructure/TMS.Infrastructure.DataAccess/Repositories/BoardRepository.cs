@@ -46,9 +46,9 @@ namespace TMS.Infrastructure.DataAccess.Repositories
             }
         }
 
-        public async Task<List<Board>> GetBoardsByDepartmentId(Guid departmentId, CancellationToken cancellationToken = default)
+        public async Task<List<Board>> GetBoardsByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default)
         {
-            return await _context.Boards.Where(x => x.DepartmentId == departmentId && x.DeleteDate == null).ToListAsync(cancellationToken);
+            return await _context.Boards.Where(x => x.CompanyId == companyId && x.DeleteDate == null).ToListAsync(cancellationToken);
         }
     }
 }

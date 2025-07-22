@@ -25,5 +25,7 @@ namespace TMS.Infrastructure.Abstractions.Repositories
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The user, or null if not found.</returns>
         Task<User> GetByTelegramAccountIdAsync(Guid telegramAccountId, CancellationToken cancellationToken = default);
+
+        Task<List<User>> GetUsersByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default);
     }
 }

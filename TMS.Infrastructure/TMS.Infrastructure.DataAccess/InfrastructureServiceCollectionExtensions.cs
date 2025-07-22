@@ -23,9 +23,9 @@ namespace TMS.Infrastructure.DataAccess
             //Репозитории с расширенным функционалом
             services.AddScoped<IBoardRepository, BoardRepository>();
             services.AddScoped<IColumnRepository, ColumnRepository>();
+            services.AddScoped<ICompanyRepository, CompanyRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
             services.AddScoped<ICredentialRepository, CredentialRepository>();
-            services.AddScoped<IDepartmentRepository, DepartmentRepository>();
             services.AddScoped<INotificationSettingRepository, NotificationSettingRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<ITaskRepository, TaskRepository>();
@@ -33,16 +33,11 @@ namespace TMS.Infrastructure.DataAccess
             services.AddScoped<ITelegramAccountRepository, TelegramAccountRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserVerificationRepository, UserVerificationRepository>();
-            services.AddScoped<IMembershipRepository, MembershipRepository>();
-            services.AddScoped<IPermissionRepository, PermissionRepository>();
-            services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+            services.AddScoped<IUserInvitationRepository, UserInvitationRepository>();
 
             //Репозитории с базовыми методами
-            services.AddScoped<IAuditableCommandRepository<Company>, CompanyRepository>();
-            services.AddScoped<IAuditableQueryRepository<Company>, CompanyRepository>();
             services.AddScoped<IAuditableCommandRepository<CredentialHistory>, CredentialHistoryRepository>();
             services.AddScoped<IAuditableQueryRepository<CredentialHistory>, CredentialHistoryRepository>();
-            services.AddScoped<IAuditableCommandRepository<RolePermission>, RolePermissionRepository>();
 
             services.AddScoped<IRedisCacheContext, RedisCacheContext>();
 

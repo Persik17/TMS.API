@@ -46,7 +46,7 @@ namespace TMS.Infrastructure.DataAccess.Repositories
             }
         }
 
-        public async Task<List<TaskType>> GetTasksByBoardId(Guid boardId, CancellationToken cancellationToken = default)
+        public async Task<List<TaskType>> GetTaskTypesByBoardIdAsync(Guid boardId, CancellationToken cancellationToken = default)
         {
             return await _context.TaskTypes.Where(x => x.BoardId == boardId && x.DeleteDate == null).ToListAsync(cancellationToken);
         }

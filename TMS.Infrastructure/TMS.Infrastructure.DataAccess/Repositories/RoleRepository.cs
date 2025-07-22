@@ -45,5 +45,10 @@ namespace TMS.Infrastructure.DataAccess.Repositories
                 await _context.SaveChangesAsync(cancellationToken);
             }
         }
+
+        public async Task<Role> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+        {
+            return await _context.Roles.FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
+        }
     }
 }

@@ -46,7 +46,7 @@ namespace TMS.Infrastructure.DataAccess.Repositories
             }
         }
 
-        public async Task<List<Column>> GetColumnsByBoardId(Guid boardId, CancellationToken cancellationToken = default)
+        public async Task<List<Column>> GetColumnsByBoardIdAsync(Guid boardId, CancellationToken cancellationToken = default)
         {
             return await _context.Columns.Where(x => x.BoardId == boardId && x.DeleteDate == null).ToListAsync(cancellationToken);
         }

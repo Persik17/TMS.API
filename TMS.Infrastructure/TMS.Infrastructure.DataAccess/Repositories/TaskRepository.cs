@@ -46,12 +46,12 @@ namespace TMS.Infrastructure.DataAccess.Repositories
             }
         }
 
-        public async Task<List<Task>> GetTasksByColumnId(Guid columnId, CancellationToken cancellationToken = default)
+        public async Task<List<Task>> GetTasksByColumnIdAsync(Guid columnId, CancellationToken cancellationToken = default)
         {
             return await _context.Tasks.Where(x => x.ColumnId == columnId && x.DeleteDate == null).ToListAsync(cancellationToken);
         }
 
-        public async Task<List<Task>> GetTasksByColumnIds(IEnumerable<Guid> columnIds, CancellationToken cancellationToken = default)
+        public async Task<List<Task>> GetTasksByColumnIdsAsync(IEnumerable<Guid> columnIds, CancellationToken cancellationToken = default)
         {
             return await _context.Tasks.Where(x => columnIds.Contains(x.ColumnId) && x.DeleteDate == null).ToListAsync(cancellationToken);
         }
