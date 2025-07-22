@@ -8,7 +8,6 @@ namespace TMS.Application.Abstractions.Services
             Guid userId,
             Guid resourceId,
             ResourceType resourceType,
-            string permissionName,
             CancellationToken cancellationToken = default);
     }
 }

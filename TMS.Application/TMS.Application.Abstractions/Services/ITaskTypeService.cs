@@ -13,5 +13,6 @@ namespace TMS.Application.Abstractions.Services
         IUpdateService<TaskTypeDto>,
         IDeleteService
     {
+        Task<List<TaskTypeDto>> GetTasksByBoardIdAsync(Guid boardId, CancellationToken cancellationToken = default);
     }
 }

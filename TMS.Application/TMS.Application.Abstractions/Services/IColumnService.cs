@@ -13,5 +13,6 @@ namespace TMS.Application.Abstractions.Services
         IUpdateService<ColumnDto>,
         IDeleteService
     {
+        Task<List<ColumnDto>> GetColumnsByBoardIdAsync(Guid boardId, Guid userId, CancellationToken cancellationToken = default);
     }
 }

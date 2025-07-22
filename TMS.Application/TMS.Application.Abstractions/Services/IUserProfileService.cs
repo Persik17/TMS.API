@@ -8,11 +8,9 @@ namespace TMS.Application.Abstractions.Services
     /// Service contract for managing User entities.
     /// Provides CRUD operations using generic read and create models.
     /// </summary>
-    public interface IUserService :
-        ICreateService<UserCreateDto, UserDto>,
+    public interface IUserProfileService :
         IReadService<UserDto>,
-        IUpdateService<UserDto>,
-        IDeleteService
+        IUpdateService<UserDto>
     {
         /// <summary>
         /// Links a Telegram account to the user asynchronously.

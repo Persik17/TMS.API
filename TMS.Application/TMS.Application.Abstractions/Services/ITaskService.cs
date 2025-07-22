@@ -14,6 +14,9 @@ namespace TMS.Application.Abstractions.Services
         IUpdateService<TaskDto>,
         IDeleteService
     {
+        Task<List<TaskDto>> GetTasksByColumnId(Guid columnId, CancellationToken cancellationToken = default);
+        Task<List<TaskDto>> GetTasksByColumnIds(IEnumerable<Guid> columnIds, CancellationToken cancellationToken = default);
+
         /// <summary>
         /// Adds a comment to a task asynchronously.
         /// </summary>
