@@ -10,7 +10,7 @@
         public string Language { get; set; }
         public string Phone { get; set; }
         public int Status { get; set; }
-        public Guid NotificationSettingsId { get; set; }
+        public Guid? NotificationSettingsId { get; set; }
         public DateTime RegistrationDate { get; set; }
         public DateTime? LastLoginDate { get; set; }
         public DateTime CreationDate { get; set; }
