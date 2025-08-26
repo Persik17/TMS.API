@@ -2,7 +2,7 @@
 using TMS.Abstractions.Enums;
 using TMS.Abstractions.Exceptions;
 using TMS.Application.Abstractions.Cache;
-using TMS.Application.Abstractions.Security;
+using TMS.Application.Abstractions.Factories;
 using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto.Board;
 using TMS.Application.Extensions;
@@ -21,6 +21,8 @@ namespace TMS.Application.Services
         private readonly IAccessService _accessService;
         private readonly ICacheService _cacheService;
         private readonly ILogger<BoardService> _logger;
+        private readonly IColumnRepository _columnRepository;
+        private readonly IColumnFactory _columnFactory;
 
         private static readonly TimeSpan BoardCacheExpiry = TimeSpan.FromMinutes(10);
 
@@ -35,12 +37,16 @@ namespace TMS.Application.Services
             IBoardRepository boardRepository,
             IAccessService accessService,
             ICacheService cacheService,
-            ILogger<BoardService> logger)
+            ILogger<BoardService> logger,
+            IColumnRepository columnRepository,
+            IColumnFactory columnFactory)
         {
             _boardRepository = boardRepository ?? throw new ArgumentNullException(nameof(boardRepository));
             _accessService = accessService ?? throw new ArgumentNullException(nameof(accessService));
             _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _columnRepository = columnRepository ?? throw new ArgumentNullException(nameof(columnRepository));
+            _columnFactory = columnFactory ?? throw new ArgumentNullException(nameof(columnFactory));
         }
 
         /// <inheritdoc/>
@@ -57,6 +63,12 @@ namespace TMS.Application.Services
 
             await _boardRepository.InsertAsync(newBoard, cancellationToken);
 
+            var columns = _columnFactory.CreateDefaultColumns(newBoard.Id);
+            foreach (var column in columns)
+            {
+                await _columnRepository.InsertAsync(column, cancellationToken);
+            }
+
             var createdBoard = await _boardRepository.GetByIdAsync(newBoard.Id, cancellationToken)
                 ?? throw new NotFoundException(typeof(Board));
 
@@ -68,6 +80,7 @@ namespace TMS.Application.Services
 
             return boardDto;
         }
+
 
         /// <inheritdoc/>
         public async Task<BoardDto> GetByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)

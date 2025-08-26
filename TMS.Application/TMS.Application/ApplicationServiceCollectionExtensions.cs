@@ -46,6 +46,7 @@ namespace TMS.Application
             services.AddScoped<IPasswordHasher, PasswordHasher>();
 
             services.AddScoped<IUserFactory, UserFactory>();
+            services.AddScoped<IColumnFactory, ColumnFactory>();
 
             services.AddScoped<ITokenService, JwtTokenService>();
 

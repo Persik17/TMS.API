@@ -120,7 +120,7 @@ namespace TMS.API.Controllers
                 DeleteDate = board.DeleteDate
             };
 
-            return Ok(viewModel); // Используем Ok, чтобы избежать ошибки с CreatedAtAction
+            return Ok(viewModel);
         }
 
         /// <summary>
