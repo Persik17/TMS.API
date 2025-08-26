@@ -4,7 +4,7 @@ namespace TMS.API.ViewModels.Company
 {
     public class CompanyInfoViewModel
     {
-        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
         public string Name { get; set; }
         public string Logo { get; set; }
         public string INN { get; set; }

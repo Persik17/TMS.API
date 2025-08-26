@@ -4,7 +4,7 @@ namespace TMS.Application.Dto.Company
 {
     public class CompanyInfoDto
     {
-        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
         public string Name { get; set; }
         public string Logo { get; set; }
         public string INN { get; set; }
