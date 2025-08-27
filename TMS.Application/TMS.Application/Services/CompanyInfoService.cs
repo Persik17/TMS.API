@@ -68,7 +68,7 @@ namespace TMS.Application.Services
 
             var dto = new CompanyInfoDto
             {
-                UserId = company.Id,
+                Id = company.Id,
                 Name = company.Name,
                 Logo = company.Logo,
                 INN = company.INN,
