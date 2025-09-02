@@ -59,7 +59,7 @@ namespace TMS.API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(TaskDto), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<TaskDto>> Create([FromBody] TaskCreateDto request, Guid userId, CancellationToken cancellationToken)
+        public async Task<ActionResult<CreatedTaskDto>> Create([FromBody] TaskCreateDto request, Guid userId, CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -70,11 +70,11 @@ namespace TMS.API.Controllers
             var createDto = new TaskCreateDto
             {
                 Name = request.Name,
-                Description = request.Description,
                 TaskTypeId = request.TaskTypeId,
                 BoardId = request.BoardId,
+                AssigneeId = request.AssigneeId,
+                CreatorId = userId,
                 ColumnId = request.ColumnId,
-                Priority = request.Priority,
             };
 
             var task = await _taskService.CreateAsync(createDto, userId, cancellationToken);
@@ -108,11 +108,9 @@ namespace TMS.API.Controllers
             {
                 Id = request.Id,
                 Name = request.Name,
-                Description = request.Description,
-                TaskTypeId = request.TaskTypeId, // Assuming these properties exist in UpdateTaskRequest
+                TaskTypeId = request.TaskTypeId,
                 BoardId = request.BoardId,
                 ColumnId = request.ColumnId,
-                Priority = request.Priority
             };
 
 
