@@ -40,7 +40,6 @@ namespace TMS.Application.Services
         {
             ArgumentNullException.ThrowIfNull(createDto);
 
-            // Проверяем доступ к доске
             if (!await _accessService.HasPermissionAsync(userId, Guid.Empty, ResourceType.Board, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no permission to create task type on board {BoardId}", userId, Guid.Empty);
@@ -67,7 +66,6 @@ namespace TMS.Application.Services
             var entity = await _taskTypeRepository.GetByIdAsync(dto.Id, cancellationToken)
                 ?? throw new NotFoundException(typeof(TaskType));
 
-            // Проверяем доступ к доске
             if (!await _accessService.HasPermissionAsync(userId, entity.BoardId, ResourceType.Board, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no permission to update task type {TaskTypeId} on board {BoardId}", userId, dto.Id, entity.BoardId);
@@ -105,7 +103,6 @@ namespace TMS.Application.Services
                 return null;
             }
 
-            // Проверяем доступ к доске
             if (!await _accessService.HasPermissionAsync(userId, entity.BoardId, ResourceType.Board, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no permission to view task type {TaskTypeId} on board {BoardId}", userId, id, entity.BoardId);
@@ -123,7 +120,6 @@ namespace TMS.Application.Services
             var entity = await _taskTypeRepository.GetByIdAsync(id, cancellationToken)
                 ?? throw new NotFoundException(typeof(TaskType));
 
-            // Проверяем доступ к доске
             if (!await _accessService.HasPermissionAsync(userId, entity.BoardId, ResourceType.Board, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no permission to delete task type {TaskTypeId} on board {BoardId}", userId, id, entity.BoardId);
@@ -137,9 +133,10 @@ namespace TMS.Application.Services
             _logger.LogInformation("TaskType with id {Id} deleted", id);
         }
 
-        public Task<List<TaskTypeDto>> GetTasksByBoardIdAsync(Guid boardId, CancellationToken cancellationToken = default)
+        public async Task<List<TaskTypeDto>> GetTasksByBoardIdAsync(Guid boardId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var entities = await _taskTypeRepository.GetTaskTypesByBoardIdAsync(boardId, cancellationToken);
+            return entities.Select(x => x.ToTaskTypeDto()).ToList();
         }
     }
 }
