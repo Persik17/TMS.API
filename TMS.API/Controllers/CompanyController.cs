@@ -245,7 +245,7 @@ namespace TMS.API.Controllers
 
             var viewModel = new CompanyInfoViewModel
             {
-                UserId = companyInfoDto.UserId,
+                Id = companyInfoDto.Id,
                 Name = companyInfoDto.Name,
                 Logo = companyInfoDto.Logo,
                 INN = companyInfoDto.INN,
