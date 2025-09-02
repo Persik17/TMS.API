@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TMS.API.ViewModels.Board;
 using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto.Board;
+using TMS.Application.Dto.Column;
 
 namespace TMS.API.Controllers
 {
@@ -16,15 +17,18 @@ namespace TMS.API.Controllers
     {
         private readonly IBoardService _boardService;
         private readonly IBoardInfoService _boardInfoService;
+        private readonly IColumnService _columnService;
         private readonly ILogger<BoardController> _logger;
 
         public BoardController(
             IBoardService boardService,
             IBoardInfoService boardInfoService,
+            IColumnService columnService,
             ILogger<BoardController> logger)
         {
             _boardService = boardService;
             _boardInfoService = boardInfoService;
+            _columnService = columnService;
             _logger = logger;
         }
 
@@ -206,10 +210,63 @@ namespace TMS.API.Controllers
             }
             catch (Exception ex)
             {
-                // Логируй ошибку и верни подробности прямо в ответе!
                 _logger.LogError(ex, "Error in GetBoards");
                 return StatusCode(500, ex.ToString());
             }
+        }
+
+        /// <summary>
+        /// Creates a new column for the board.
+        /// </summary>
+        [HttpPost("{boardId:guid}/columns")]
+        public async Task<ActionResult<ColumnDto>> CreateColumn(
+            [FromRoute] Guid companyId,
+            [FromRoute] Guid boardId,
+            [FromBody] ColumnCreateDto request,
+            [FromQuery] Guid userId,
+            CancellationToken cancellationToken)
+        {
+            if (request == null)
+            {
+                _logger.LogWarning("CreateColumn called with null model");
+                return BadRequest("Column data is required.");
+            }
+
+            request.BoardId = boardId;
+
+            var columnDto = await _columnService.CreateAsync(request, userId, cancellationToken);
+            return Ok(columnDto);
+        }
+
+        [HttpPut("{boardId:guid}/columns/{columnId:guid}")]
+        public async Task<ActionResult<ColumnDto>> UpdateColumn(
+            [FromRoute] Guid companyId,
+            [FromRoute] Guid boardId,
+            [FromRoute] Guid columnId,
+            [FromBody] ColumnDto columnDto,
+            [FromQuery] Guid userId,
+            CancellationToken cancellationToken)
+        {
+            if (columnDto == null)
+                return BadRequest("Column data is required.");
+            if (columnId != columnDto.Id)
+                return BadRequest("ID mismatch");
+            columnDto.BoardId = boardId;
+
+            var updated = await _columnService.UpdateAsync(columnDto, userId, cancellationToken);
+            return Ok(updated);
+        }
+
+        [HttpDelete("{boardId:guid}/columns/{columnId:guid}")]
+        public async Task<IActionResult> DeleteColumn(
+            [FromRoute] Guid companyId,
+            [FromRoute] Guid boardId,
+            [FromRoute] Guid columnId,
+            [FromQuery] Guid userId,
+            CancellationToken cancellationToken)
+        {
+            await _columnService.DeleteAsync(columnId, userId, cancellationToken);
+            return NoContent();
         }
     }
 }
