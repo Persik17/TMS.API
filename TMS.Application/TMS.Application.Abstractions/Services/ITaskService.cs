@@ -9,7 +9,7 @@ namespace TMS.Application.Abstractions.Services
     /// Provides CRUD operations using generic read and create models.
     /// </summary>
     public interface ITaskService :
-        ICreateService<TaskCreateDto, TaskDto>,
+        ICreateService<TaskCreateDto, CreatedTaskDto>,
         IReadService<TaskDto>,
         IUpdateService<TaskDto>,
         IDeleteService

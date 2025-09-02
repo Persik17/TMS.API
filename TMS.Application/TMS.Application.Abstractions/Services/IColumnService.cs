@@ -8,7 +8,7 @@ namespace TMS.Application.Abstractions.Services
     /// Provides CRUD operations using generic read and create models.
     /// </summary>
     public interface IColumnService :
-        ICreateService<ColumnCreateDto, ColumnDto >,
+        ICreateService<ColumnCreateDto, ColumnDto>,
         IReadService<ColumnDto>,
         IUpdateService<ColumnDto>,
         IDeleteService

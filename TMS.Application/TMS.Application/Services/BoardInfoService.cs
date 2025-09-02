@@ -42,11 +42,9 @@ namespace TMS.Application.Services
                 return cached;
             }
 
-            // Колонки
             var columns = await _columnRepository.GetColumnsByBoardIdAsync(boardId, cancellationToken);
             var columnIds = columns.Select(c => c.Id).ToList();
 
-            // Таски по всем колонкам одним запросом
             var tasks = await _taskRepository.GetTasksByColumnIdsAsync(columnIds, cancellationToken);
 
             var columnsDto = columns.Select(col => new BoardColumnInfoDto

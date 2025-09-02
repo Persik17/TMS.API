@@ -35,7 +35,7 @@ namespace TMS.Application.Services
         }
 
         /// <inheritdoc/>
-        public async Task<TaskDto> CreateAsync(TaskCreateDto createDto, Guid userId, CancellationToken cancellationToken = default)
+        public async Task<CreatedTaskDto> CreateAsync(TaskCreateDto createDto, Guid userId, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(createDto);
 
@@ -53,7 +53,21 @@ namespace TMS.Application.Services
 
             _logger.LogInformation("Task created with id: {Id} on board {BoardId}", entity.Id, entity.BoardId);
 
-            return entity.ToTaskDto();
+            return new CreatedTaskDto
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                Description = entity.Description,
+                BoardId = entity.BoardId,
+                Priority = entity.Priority,
+                StoryPoints = entity.StoryPoints,
+                StartDate = entity.StartDate,
+                EndDate = entity.EndDate,
+                TaskTypeId = entity.TaskTypeId,
+                CreatorId = entity.CreatorId,
+                AssigneeId = entity.AssigneeId,
+                ColumnId = entity.ColumnId
+            };
         }
 
         /// <inheritdoc/>
