@@ -144,5 +144,26 @@ namespace TMS.API.Controllers
             await _service.DeleteAsync(id, userId, cancellationToken);
             return NoContent();
         }
+
+        /// <summary>
+        /// Gets all task types for a board.
+        /// </summary>
+        [HttpGet("by-board/{boardId:guid}")]
+        [ProducesResponseType(typeof(List<TaskTypeViewModel>), 200)]
+        public async Task<ActionResult<List<TaskTypeViewModel>>> GetByBoardId(Guid boardId, Guid userId, CancellationToken cancellationToken)
+        {
+            var dtos = await _service.GetTasksByBoardIdAsync(boardId, cancellationToken);
+            var models = dtos.Select(dto => new TaskTypeViewModel
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Description = dto.Description,
+                CreationDate = dto.CreationDate,
+                UpdateDate = dto.UpdateDate,
+                DeleteDate = dto.DeleteDate
+            }).ToList();
+
+            return Ok(models);
+        }
     }
 }
