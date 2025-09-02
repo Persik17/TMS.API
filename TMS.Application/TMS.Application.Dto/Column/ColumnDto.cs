@@ -3,6 +3,7 @@
     public class ColumnDto
     {
         public Guid Id { get; set; }
+        public Guid BoardId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public int ColumnType { get; set; }
