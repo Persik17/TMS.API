@@ -54,5 +54,9 @@ namespace TMS.Application.Abstractions.Services
         /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
         /// <returns>A task that represents the asynchronous update comment operation. The task result contains the updated comment as a DTO.</returns>
         Task<CommentDto> UpdateCommentAsync(Guid taskId, Guid commentId, CommentDto dto, CancellationToken cancellationToken = default);
+
+        Task<List<TaskFileDto>> GetFilesAsync(Guid taskId, Guid userId, CancellationToken cancellationToken = default);
+        Task DeleteFileAsync(Guid taskId, Guid fileId, Guid userId, CancellationToken cancellationToken = default);
+        Task<TaskFileDto> DownloadFileAsync(Guid taskId, Guid fileId, Guid userId, CancellationToken cancellationToken = default);
     }
 }

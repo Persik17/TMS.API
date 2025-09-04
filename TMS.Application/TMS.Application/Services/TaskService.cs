@@ -21,6 +21,7 @@ namespace TMS.Application.Services
         private readonly IBoardRepository _boardRepository;
         private readonly ICommentRepository _commentRepository;
         private readonly IUserRepository _userRepository;
+        private readonly ITaskFileRepository _taskFileRepository;
         private readonly IAccessService _accessService;
         private readonly ILogger<TaskService> _logger;
 
@@ -29,6 +30,7 @@ namespace TMS.Application.Services
             IBoardRepository boardRepository,
             ICommentRepository commentRepository,
             IUserRepository userRepository,
+            ITaskFileRepository taskFileRepository,
             IAccessService accessService,
             ILogger<TaskService> logger)
         {
@@ -36,6 +38,7 @@ namespace TMS.Application.Services
             _boardRepository = boardRepository ?? throw new ArgumentNullException(nameof(boardRepository));
             _commentRepository = commentRepository ?? throw new ArgumentNullException(nameof(commentRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _taskFileRepository = taskFileRepository ?? throw new ArgumentNullException(nameof(taskFileRepository));
             _accessService = accessService ?? throw new ArgumentNullException(nameof(accessService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -369,6 +372,63 @@ namespace TMS.Application.Services
                 UpdateDate = entity.UpdateDate,
                 DeleteDate = entity.DeleteDate
             }).ToList();
+        }
+
+        public async Task<List<TaskFileDto>> GetFilesAsync(Guid taskId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            var task = await _taskRepository.GetByIdAsync(taskId, cancellationToken)
+                ?? throw new NotFoundException(typeof(Infrastructure.DataModels.Task));
+
+            if (!await _accessService.HasPermissionAsync(userId, task.BoardId, ResourceType.Board, cancellationToken))
+                throw new ForbiddenException();
+
+            var files = await _taskFileRepository.GetFilesByTaskIdAsync(taskId, cancellationToken);
+            return [.. files.Select(f => new TaskFileDto
+            {
+                Id = f.Id,
+                TaskId = f.TaskId,
+                FileName = f.FileName,
+                ContentType = f.ContentType,
+                CreationDate = f.CreationDate,
+            })];
+        }
+
+        public async System.Threading.Tasks.Task DeleteFileAsync(Guid taskId, Guid fileId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            var task = await _taskRepository.GetByIdAsync(taskId, cancellationToken)
+                ?? throw new NotFoundException(typeof(Infrastructure.DataModels.Task));
+
+            if (!await _accessService.HasPermissionAsync(userId, task.BoardId, ResourceType.Board, cancellationToken))
+                throw new ForbiddenException();
+
+            var file = await _taskFileRepository.GetByIdAsync(fileId, cancellationToken);
+            if (file == null || file.TaskId != taskId)
+                throw new NotFoundException(typeof(TaskFile));
+
+            await _taskFileRepository.DeleteAsync(fileId, cancellationToken);
+        }
+
+        public async Task<TaskFileDto> DownloadFileAsync(Guid taskId, Guid fileId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            var task = await _taskRepository.GetByIdAsync(taskId, cancellationToken)
+                ?? throw new NotFoundException(typeof(Infrastructure.DataModels.Task));
+
+            if (!await _accessService.HasPermissionAsync(userId, task.BoardId, ResourceType.Board, cancellationToken))
+                throw new ForbiddenException();
+
+            var file = await _taskFileRepository.GetByIdAsync(fileId, cancellationToken);
+            if (file == null || file.TaskId != taskId)
+                throw new NotFoundException(typeof(TaskFile));
+
+            return new TaskFileDto
+            {
+                Id = file.Id,
+                TaskId = file.TaskId,
+                FileName = file.FileName,
+                ContentType = file.ContentType,
+                CreationDate = file.CreationDate,
+                FileData = file.FileData
+            };
         }
     }
 }

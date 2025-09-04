@@ -246,5 +246,31 @@ namespace TMS.API.Controllers
             var tasks = await _taskService.GetTasksByAssigneeIdAsync(userId, userId, cancellationToken);
             return Ok(tasks);
         }
+
+        [HttpGet("{taskId:guid}/files")]
+        [ProducesResponseType(typeof(List<TaskFileDto>), 200)]
+        public async Task<ActionResult<List<TaskFileDto>>> GetFiles(Guid taskId, Guid userId, CancellationToken cancellationToken)
+        {
+            var files = await _taskService.GetFilesAsync(taskId, userId, cancellationToken);
+            return Ok(files);
+        }
+
+        [HttpDelete("{taskId:guid}/files/{fileId:guid}")]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> DeleteFile(Guid taskId, Guid fileId, Guid userId, CancellationToken cancellationToken)
+        {
+            await _taskService.DeleteFileAsync(taskId, fileId, userId, cancellationToken);
+            return NoContent();
+        }
+
+        [HttpGet("{taskId:guid}/files/{fileId:guid}/download")]
+        public async Task<IActionResult> DownloadFile(Guid taskId, Guid fileId, Guid userId, CancellationToken cancellationToken)
+        {
+            var fileDto = await _taskService.DownloadFileAsync(taskId, fileId, userId, cancellationToken);
+            if (fileDto == null || fileDto.FileData == null)
+                return NotFound();
+
+            return File(fileDto.FileData, fileDto.ContentType, fileDto.FileName);
+        }
     }
 }

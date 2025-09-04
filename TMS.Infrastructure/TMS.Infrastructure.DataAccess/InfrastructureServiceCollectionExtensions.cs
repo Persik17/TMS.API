@@ -31,6 +31,7 @@ namespace TMS.Infrastructure.DataAccess
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<ITaskRepository, TaskRepository>();
             services.AddScoped<ITaskTypeRepository, TaskTypeRepository>();
+            services.AddScoped<ITaskFileRepository, TaskFileRepository>();
             services.AddScoped<ITelegramAccountRepository, TelegramAccountRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserVerificationRepository, UserVerificationRepository>();
