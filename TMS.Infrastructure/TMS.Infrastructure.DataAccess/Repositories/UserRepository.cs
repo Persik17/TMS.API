@@ -86,5 +86,10 @@ namespace TMS.Infrastructure.DataAccess.Repositories
                 .Where(u => u.Boards.Any(b => b.Id == boardId) && u.DeleteDate == null)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<IEnumerable<User>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
+        {
+            return await _context.Users.Where(u => ids.Contains(u.Id)).ToListAsync(cancellationToken);
+        }
     }
 }

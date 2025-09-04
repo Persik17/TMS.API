@@ -1,4 +1,5 @@
-﻿using TMS.Application.Abstractions.Services.BaseCommands;
+﻿using Microsoft.AspNetCore.Http;
+using TMS.Application.Abstractions.Services.BaseCommands;
 using TMS.Application.Dto.Comment;
 using TMS.Application.Dto.Task;
 
@@ -11,7 +12,7 @@ namespace TMS.Application.Abstractions.Services
     public interface ITaskService :
         ICreateService<TaskCreateDto, CreatedTaskDto>,
         IReadService<TaskDto>,
-        IUpdateService<TaskDto>,
+        IUpdateService<TaskUpdateDto>,
         IDeleteService
     {
         Task<List<TaskDto>> GetTasksByColumnId(Guid columnId, CancellationToken cancellationToken = default);
@@ -58,5 +59,6 @@ namespace TMS.Application.Abstractions.Services
         Task<List<TaskFileDto>> GetFilesAsync(Guid taskId, Guid userId, CancellationToken cancellationToken = default);
         Task DeleteFileAsync(Guid taskId, Guid fileId, Guid userId, CancellationToken cancellationToken = default);
         Task<TaskFileDto> DownloadFileAsync(Guid taskId, Guid fileId, Guid userId, CancellationToken cancellationToken = default);
+        Task<TaskFileDto> UploadFileAsync(Guid taskId, IFormFile file, Guid userId, CancellationToken cancellationToken = default);
     }
 }

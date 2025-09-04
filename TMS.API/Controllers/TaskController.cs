@@ -89,33 +89,13 @@ namespace TMS.API.Controllers
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content result.</returns>
         [HttpPut("{id:guid}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] TaskDto request, Guid userId, CancellationToken cancellationToken)
+        public async Task<ActionResult<TaskUpdateDto>> Update(Guid id, [FromBody] TaskUpdateDto dto, Guid userId, CancellationToken cancellationToken)
         {
-            if (request == null)
-            {
-                _logger.LogWarning("Update called with null DTO");
-                return BadRequest("Task data is required.");
-            }
-            if (id != request.Id)
-            {
-                _logger.LogWarning("Update id mismatch: route id {RouteId}, body id {BodyId}", id, request.Id);
-                return BadRequest("ID mismatch");
-            }
+            if (dto == null) return BadRequest("Task data is required.");
+            if (id != dto.Id) return BadRequest("ID mismatch");
 
-            var updateDto = new TaskDto
-            {
-                Id = request.Id,
-                Name = request.Name,
-                TaskTypeId = request.TaskTypeId,
-                BoardId = request.BoardId,
-                ColumnId = request.ColumnId,
-            };
-
-
-            await _taskService.UpdateAsync(updateDto, userId, cancellationToken);
-            return NoContent();
+            var updated = await _taskService.UpdateAsync(dto, userId, cancellationToken);
+            return Ok(updated);
         }
 
         /// <summary>
@@ -261,16 +241,6 @@ namespace TMS.API.Controllers
         {
             await _taskService.DeleteFileAsync(taskId, fileId, userId, cancellationToken);
             return NoContent();
-        }
-
-        [HttpGet("{taskId:guid}/files/{fileId:guid}/download")]
-        public async Task<IActionResult> DownloadFile(Guid taskId, Guid fileId, Guid userId, CancellationToken cancellationToken)
-        {
-            var fileDto = await _taskService.DownloadFileAsync(taskId, fileId, userId, cancellationToken);
-            if (fileDto == null || fileDto.FileData == null)
-                return NotFound();
-
-            return File(fileDto.FileData, fileDto.ContentType, fileDto.FileName);
         }
     }
 }

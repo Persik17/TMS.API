@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
 using TMS.Abstractions.Enums;
 using TMS.Abstractions.Exceptions;
 using TMS.Application.Abstractions.Security;
@@ -79,7 +80,7 @@ namespace TMS.Application.Services
         }
 
         /// <inheritdoc/>
-        public async Task<TaskDto> UpdateAsync(TaskDto dto, Guid userId, CancellationToken cancellationToken = default)
+        public async Task<TaskUpdateDto> UpdateAsync(TaskUpdateDto dto, Guid userId, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
 
@@ -87,32 +88,29 @@ namespace TMS.Application.Services
                 ?? throw new NotFoundException(typeof(Infrastructure.DataModels.Task));
 
             if (!await _accessService.HasPermissionAsync(userId, entity.BoardId, ResourceType.Board, cancellationToken))
-            {
-                _logger.LogWarning("User {UserId} has no permission to update task {TaskId} on board {BoardId}", userId, entity.Id, entity.BoardId);
                 throw new ForbiddenException();
-            }
 
-            entity.Name = dto.Name;
-            entity.Description = dto.Description;
-            entity.BoardId = dto.BoardId;
-            entity.CreatorId = dto.CreatorId;
-            entity.AssigneeId = dto.AssigneeId;
-            entity.StartDate = dto.StartDate;
-            entity.EndDate = dto.EndDate;
-            entity.ActualClosingDate = dto.ActualClosingDate;
-            entity.StoryPoints = dto.StoryPoints;
-            entity.TaskTypeId = dto.TaskTypeId;
-            entity.Priority = dto.Priority;
-            entity.Severity = dto.Severity;
-            entity.ParentTaskId = dto.ParentTaskId;
-            entity.ColumnId = dto.ColumnId;
+            entity.Name = dto.Name ?? entity.Name;
+            entity.Description = dto.Description ?? entity.Description;
+            entity.AssigneeId = dto.AssigneeId ?? entity.AssigneeId;
+            entity.StoryPoints = dto.StoryPoints ?? entity.StoryPoints;
+            entity.Priority = dto.Priority ?? entity.Priority;
+            entity.Severity = dto.Severity ?? entity.Severity;
             entity.UpdateDate = DateTime.UtcNow;
 
             await _taskRepository.UpdateAsync(entity, cancellationToken);
 
-            _logger.LogInformation("Task with id {Id} updated by user {UserId}", dto.Id, userId);
-
-            return entity.ToTaskDto();
+            // Возвращаем TaskUpdateDto
+            return new TaskUpdateDto
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                Description = entity.Description,
+                AssigneeId = entity.AssigneeId,
+                StoryPoints = entity.StoryPoints,
+                Priority = entity.Priority,
+                Severity = entity.Severity
+            };
         }
 
         /// <inheritdoc/>
@@ -223,7 +221,6 @@ namespace TMS.Application.Services
             var task = await _taskRepository.GetByIdAsync(taskId, cancellationToken)
                 ?? throw new NotFoundException(typeof(Infrastructure.DataModels.Task));
 
-            // Проверяем только право на доску (любое, например, ViewTask)
             if (!await _accessService.HasPermissionAsync(userId, task.BoardId, ResourceType.Board, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no access to board {BoardId} to view comments for task {TaskId}", userId, task.BoardId, taskId);
@@ -231,6 +228,15 @@ namespace TMS.Application.Services
             }
 
             var comments = await _commentRepository.GetAllAsync(cancellationToken);
+            var authorIds = comments
+                .Where(c => c.TaskId == taskId && c.DeleteDate == null)
+                .Select(c => c.UserId)
+                .Distinct()
+                .ToList();
+
+            var users = await _userRepository.GetByIdsAsync(authorIds, cancellationToken);
+            var userNames = users.ToDictionary(u => u.Id, u => u.FullName);
+
             return comments
                 .Where(c => c.TaskId == taskId && c.DeleteDate == null)
                 .Select(c => new CommentDto
@@ -238,6 +244,7 @@ namespace TMS.Application.Services
                     Id = c.Id,
                     TaskId = c.TaskId,
                     AuthorId = c.UserId,
+                    AuthorName = userNames.TryGetValue(c.UserId, out var name) ? name : "Нет имени",
                     Text = c.Text,
                     CreationDate = c.CreationDate,
                     UpdateDate = c.UpdateDate,
@@ -429,6 +436,75 @@ namespace TMS.Application.Services
                 CreationDate = file.CreationDate,
                 FileData = file.FileData
             };
+        }
+
+        public async Task<TaskFileDto> UploadFileAsync(
+            Guid taskId,
+            IFormFile file,
+            Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                _logger.LogInformation("UploadFileAsync called. taskId={TaskId}, userId={UserId}, file={FileName}, fileLength={FileLength}",
+                    taskId, userId, file?.FileName, file?.Length ?? -1);
+
+                if (file == null || file.Length == 0)
+                {
+                    _logger.LogWarning("UploadFileAsync: файл не передан или пустой. file={File}", file);
+                    throw new ArgumentException("Файл не передан или пустой", nameof(file));
+                }
+
+                var task = await _taskRepository.GetByIdAsync(taskId, cancellationToken);
+                if (task == null)
+                {
+                    _logger.LogWarning("UploadFileAsync: Task not found. taskId={TaskId}", taskId);
+                    throw new NotFoundException(typeof(Infrastructure.DataModels.Task));
+                }
+
+                bool hasPermission = await _accessService.HasPermissionAsync(userId, task.BoardId, ResourceType.Board, cancellationToken);
+                if (!hasPermission)
+                {
+                    _logger.LogWarning("UploadFileAsync: Нет прав на upload. userId={UserId}, taskId={TaskId}, boardId={BoardId}", userId, taskId, task.BoardId);
+                    throw new ForbiddenException();
+                }
+
+                byte[] fileBytes;
+                using (var ms = new MemoryStream())
+                {
+                    await file.CopyToAsync(ms, cancellationToken);
+                    fileBytes = ms.ToArray();
+                }
+
+                var newFile = new TaskFile
+                {
+                    Id = Guid.NewGuid(),
+                    TaskId = taskId,
+                    FileName = file.FileName,
+                    ContentType = file.ContentType ?? "application/octet-stream",
+                    CreationDate = DateTime.UtcNow,
+                    FileData = fileBytes
+                };
+
+                await _taskFileRepository.InsertAsync(newFile, cancellationToken);
+
+                _logger.LogInformation("UploadFileAsync: User {UserId} uploaded file {FileName} (id: {FileId}) to task {TaskId}",
+                    userId, newFile.FileName, newFile.Id, taskId);
+
+                return new TaskFileDto
+                {
+                    Id = newFile.Id,
+                    TaskId = newFile.TaskId,
+                    FileName = newFile.FileName,
+                    ContentType = newFile.ContentType,
+                    CreationDate = newFile.CreationDate
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка в UploadFileAsync! taskId={TaskId}, userId={UserId}, file={FileName}", taskId, userId, file?.FileName);
+                throw;
+            }
         }
     }
 }

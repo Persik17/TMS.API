@@ -24,6 +24,7 @@
         /// Gets or sets the unique identifier of the author who created the comment.
         /// </summary>
         public Guid AuthorId { get; set; }
+        public string AuthorName { get; set; }
 
         /// <summary>
         /// Gets or sets the date and time when the comment was created.
