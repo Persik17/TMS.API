@@ -268,5 +268,31 @@ namespace TMS.API.Controllers
             await _columnService.DeleteAsync(columnId, userId, cancellationToken);
             return NoContent();
         }
+
+        [HttpPatch("{boardId:guid}/columns/order")]
+        public async Task<ActionResult<List<ColumnDto>>> UpdateColumnOrder(
+            [FromRoute] Guid companyId,
+            [FromRoute] Guid boardId,
+            [FromBody] List<ColumnDto> columns,
+            [FromQuery] Guid userId,
+            CancellationToken cancellationToken)
+        {
+            if (columns == null)
+                return BadRequest("Columns are required.");
+
+            var updated = await _columnService.UpdateColumnOrderAsync(boardId, columns, userId, cancellationToken);
+            return Ok(updated);
+        }
+
+        [HttpGet("{boardId:guid}/analytics")]
+        public async Task<ActionResult<BoardAnalyticsDto>> GetBoardAnalytics(
+            Guid companyId,
+            Guid boardId,
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            var analytics = await _boardInfoService.GetBoardAnalyticsAsync(boardId, userId, cancellationToken);
+            return Ok(analytics);
+        }
     }
 }

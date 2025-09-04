@@ -56,9 +56,9 @@ namespace TMS.API.Controllers
         /// <param name="request">The request containing the user data.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The created user DTO.</returns>
-        [HttpPost]
-        [ProducesResponseType(typeof(UserDto), 201)]
-        [ProducesResponseType(400)]
+        //[HttpPost]
+        //[ProducesResponseType(typeof(UserDto), 201)]
+        //[ProducesResponseType(400)]
         //public async Task<ActionResult<UserDto>> Create([FromBody] UserCreateDto request, Guid userId, CancellationToken cancellationToken)
         //{
         //    if (request == null)
@@ -100,7 +100,9 @@ namespace TMS.API.Controllers
 
             var updateDto = new UserDto
             {
-                Id = request.Id
+                Id = request.Id,
+                FullName = request.FullName,
+                Phone = request.Phone
             };
 
             await _userService.UpdateAsync(updateDto, userId, cancellationToken);
@@ -113,8 +115,8 @@ namespace TMS.API.Controllers
         /// <param name="id">The ID of the user to delete.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>No content result.</returns>
-        [HttpDelete("{id:guid}")]
-        [ProducesResponseType(204)]
+        //[HttpDelete("{id:guid}")]
+        //[ProducesResponseType(204)]
         //public async Task<IActionResult> Delete(Guid id, Guid userId, CancellationToken cancellationToken)
         //{
         //    _logger.LogInformation("Deleting user with id {Id}", id);
