@@ -40,6 +40,7 @@ namespace TMS.Infrastructure.DataModels
         public Guid TaskTypeId { get; set; }
         public TaskType TaskType { get; set; }
 
+        public bool IsCompletedTask { get; set; }
         public int? Priority { get; set; }
         public int? Severity { get; set; }
 

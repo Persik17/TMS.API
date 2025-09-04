@@ -1,8 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
+using TMS.Abstractions.Enums;
+using TMS.Abstractions.Exceptions;
 using TMS.Application.Abstractions.Cache;
+using TMS.Application.Abstractions.Security;
 using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto.Board;
 using TMS.Application.Dto.Company;
+using TMS.Application.Extensions;
 using TMS.Infrastructure.Abstractions.Repositories;
 using TMS.Infrastructure.DataModels;
 using Task = System.Threading.Tasks.Task;
@@ -11,6 +15,7 @@ namespace TMS.Application.Services
 {
     public class CompanyInfoService : ICompanyInfoService
     {
+        private readonly IUserRepository _userRepository;
         private readonly ITaskRepository _taskRepository;
         private readonly IColumnRepository _columnRepository;
         private readonly ICompanyRepository _companyRepository;
@@ -22,6 +27,7 @@ namespace TMS.Application.Services
         private static readonly TimeSpan CompanyInfoCacheExpiry = TimeSpan.FromMinutes(10);
 
         public CompanyInfoService(
+            IUserRepository userRepository,
             ITaskRepository taskRepository,
             IColumnRepository columnRepository,
             ICompanyRepository companyRepository,
@@ -30,6 +36,7 @@ namespace TMS.Application.Services
             ICacheService cacheService,
             ILogger<CompanyService> logger)
         {
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
             _columnRepository = columnRepository ?? throw new ArgumentNullException(nameof(columnRepository));
             _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
@@ -121,16 +128,17 @@ namespace TMS.Application.Services
             var tasks = await _taskRepository.GetTasksByColumnIdsAsync(columns.Select(c => c.Id), cancellationToken);
 
             var totalTasks = tasks.Count();
-            var completedTasks = 20;
-            var tasksInWork = tasks.Count(t => t.AssigneeId != null);
+            var completedTasks = tasks.Count(task => task.IsCompletedTask);
+            var tasksInWork = tasks.Count(t => t.Assignee != null);
 
             var groupBoards = tasks
                 .GroupBy(b => b.BoardId)
                 .OrderBy(b => b);
 
             var leaderBoardId = groupBoards.Max(b => b.Key);
-            var leaderBoard = await _boardRepository.GetBoardByBoardIdAsync(leaderBoardId, cancellationToken);
+            var leaderBoard = await _boardRepository.GetByIdAsync(leaderBoardId, cancellationToken);
             
+            var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
 
             return new CEOSummaryDto
             {
@@ -138,7 +146,7 @@ namespace TMS.Application.Services
                 TotalDone = completedTasks,
                 TotalInProgress = tasksInWork,
                 LeadBoard = leaderBoard.Name,
-                MostActiveUser = "Иван"
+                MostActiveUser = user.FullName ?? "Данные не указаны"
             };
         }
     }

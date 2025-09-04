@@ -276,16 +276,16 @@ namespace TMS.API.Controllers
                     {
                         new CEOSummaryBoardDto()
                         {
-                            Name = "тест",
-                            TasksDone = 2,
-                            TasksTotal = 5,
-                            TasksInProgress = 3
+                            Name = CEOSummary.LeadBoard,
+                            TasksDone = CEOSummary.TotalDone,
+                            TasksTotal = CEOSummary.TotalTasks,
+                            TasksInProgress = CEOSummary.TotalInProgress
                         }
                     },
                     TotalDone = CEOSummary.TotalDone,
                     TotalTasks = CEOSummary.TotalTasks,
                     TotalInProgress = CEOSummary.TotalInProgress,
-                    LeadBoard = "Доска альфа",
+                    LeadBoard = CEOSummary.LeadBoard,
                     MostActiveUser = CEOSummary.MostActiveUser,
                 }
             };
