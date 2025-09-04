@@ -16,6 +16,8 @@ namespace TMS.Application.Abstractions.Services
     {
         Task<List<TaskDto>> GetTasksByColumnId(Guid columnId, CancellationToken cancellationToken = default);
         Task<List<TaskDto>> GetTasksByColumnIds(IEnumerable<Guid> columnIds, CancellationToken cancellationToken = default);
+        Task<List<TaskDto>> GetTasksByAssigneeIdAsync(Guid assigneeId, Guid userId, CancellationToken cancellationToken = default);
+        Task MoveTaskToColumn(Guid taskId, Guid columnId, Guid userId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Adds a comment to a task asynchronously.

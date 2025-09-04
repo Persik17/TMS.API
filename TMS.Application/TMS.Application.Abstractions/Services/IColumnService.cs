@@ -14,5 +14,6 @@ namespace TMS.Application.Abstractions.Services
         IDeleteService
     {
         Task<List<ColumnDto>> GetColumnsByBoardIdAsync(Guid boardId, Guid userId, CancellationToken cancellationToken = default);
+        Task<List<ColumnDto>> UpdateColumnOrderAsync(Guid boardId, List<ColumnDto> columns, Guid userId, CancellationToken cancellationToken = default);
     }
 }

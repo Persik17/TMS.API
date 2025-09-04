@@ -22,7 +22,7 @@ namespace TMS.Application.Services
         private readonly ICacheService _cacheService;
         private readonly ILogger<ColumnService> _logger;
 
-        private static readonly TimeSpan ColumnCacheExpiry = TimeSpan.FromMinutes(10);
+        private static readonly TimeSpan ColumnCacheExpiry = TimeSpan.FromSeconds(10);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnService"/> class.
@@ -51,7 +51,7 @@ namespace TMS.Application.Services
 
             _logger.LogInformation("User {UserId} is creating new column: {Name}", userId, createDto.Name);
 
-            if (!await _accessService.HasPermissionAsync(userId, Guid.Empty, ResourceType.Column, cancellationToken))
+            if (!await _accessService.HasPermissionAsync(userId, createDto.BoardId, ResourceType.Board, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no permission to create column in board {BoardId}", userId, Guid.Empty);
                 throw new ForbiddenException();
@@ -204,6 +204,34 @@ namespace TMS.Application.Services
             await _cacheService.SetAsync(cacheKey, columnDtos, ColumnCacheExpiry);
 
             return columnDtos;
+        }
+
+        public async Task<List<ColumnDto>> UpdateColumnOrderAsync(Guid boardId, List<ColumnDto> columns, Guid userId, CancellationToken cancellationToken = default)
+        {
+            if (boardId == Guid.Empty)
+                throw new WrongIdException(typeof(Column));
+
+            if (columns == null || columns.Count == 0)
+                throw new ArgumentException("Columns required");
+
+            if (!await _accessService.HasPermissionAsync(userId, boardId, ResourceType.Board, cancellationToken))
+                throw new ForbiddenException();
+
+            var dbColumns = await _columnRepository.GetColumnsByBoardIdAsync(boardId, cancellationToken);
+
+            foreach (var dto in columns)
+            {
+                var column = dbColumns.FirstOrDefault(c => c.Id == dto.Id);
+                if (column != null)
+                {
+                    column.Order = dto.Order;
+                    column.UpdateDate = DateTime.UtcNow;
+                    await _columnRepository.UpdateAsync(column, cancellationToken);
+                }
+            }
+
+            var result = dbColumns.OrderBy(c => c.Order).Select(c => c.ToColumnDto()).ToList();
+            return result;
         }
     }
 }

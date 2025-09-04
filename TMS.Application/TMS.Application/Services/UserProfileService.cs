@@ -39,7 +39,6 @@ namespace TMS.Application.Services
 
         public async Task<UserDto> GetByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
         {
-            // Только сам себя — никакой другой профиль пользователь просмотреть не может
             if (id != userId)
             {
                 _logger.LogWarning("User {UserId} tried to get profile of another user {Id}", userId, id);
@@ -80,11 +79,7 @@ namespace TMS.Application.Services
             var existingUser = await _userRepository.GetByIdAsync(dto.Id, cancellationToken)
                 ?? throw new NotFoundException(typeof(User));
 
-            // Только разрешённые к изменению поля, пример:
             existingUser.FullName = dto.FullName;
-            existingUser.Email = dto.Email;
-            existingUser.Timezone = dto.Timezone;
-            existingUser.Language = dto.Language;
             existingUser.Phone = dto.Phone;
             existingUser.UpdateDate = DateTime.UtcNow;
 
@@ -150,11 +145,5 @@ namespace TMS.Application.Services
 
             _logger.LogInformation("TelegramAccount {TelegramId} unlinked from user {UserId}", telegramId, userId);
         }
-
-        public Task<UserDto> CreateAsync(UserCreateDto createDto, Guid userId, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException("Создавать профиль через self-сервис нельзя");
-
-        public Task DeleteAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException("Удалять себя через self-сервис нельзя");
     }
 }

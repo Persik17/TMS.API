@@ -18,18 +18,24 @@ namespace TMS.Application.Services
     public class TaskService : ITaskService
     {
         private readonly ITaskRepository _taskRepository;
+        private readonly IBoardRepository _boardRepository;
         private readonly ICommentRepository _commentRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IAccessService _accessService;
         private readonly ILogger<TaskService> _logger;
 
         public TaskService(
             ITaskRepository taskRepository,
+            IBoardRepository boardRepository,
             ICommentRepository commentRepository,
+            IUserRepository userRepository,
             IAccessService accessService,
             ILogger<TaskService> logger)
         {
             _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
+            _boardRepository = boardRepository ?? throw new ArgumentNullException(nameof(boardRepository));
             _commentRepository = commentRepository ?? throw new ArgumentNullException(nameof(commentRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _accessService = accessService ?? throw new ArgumentNullException(nameof(accessService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -39,7 +45,6 @@ namespace TMS.Application.Services
         {
             ArgumentNullException.ThrowIfNull(createDto);
 
-            // Проверка доступа к доске
             if (!await _accessService.HasPermissionAsync(userId, createDto.BoardId, ResourceType.Board, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no permission to create tasks on board {BoardId}", userId, createDto.BoardId);
@@ -78,7 +83,6 @@ namespace TMS.Application.Services
             var entity = await _taskRepository.GetByIdAsync(dto.Id, cancellationToken)
                 ?? throw new NotFoundException(typeof(Infrastructure.DataModels.Task));
 
-            // Проверка доступа к доске
             if (!await _accessService.HasPermissionAsync(userId, entity.BoardId, ResourceType.Board, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no permission to update task {TaskId} on board {BoardId}", userId, entity.Id, entity.BoardId);
@@ -118,14 +122,48 @@ namespace TMS.Application.Services
                 return null;
             }
 
-            // Проверка доступа к доске
             if (!await _accessService.HasPermissionAsync(userId, entity.BoardId, ResourceType.Board, cancellationToken))
             {
                 _logger.LogWarning("User {UserId} has no permission to view task {TaskId} on board {BoardId}", userId, entity.Id, entity.BoardId);
                 throw new ForbiddenException();
             }
 
-            return entity.ToTaskDto();
+            var creatorName = string.Empty;
+            var assigneeName = string.Empty;
+            if (entity.CreatorId != Guid.Empty)
+            {
+                var creator = await _userRepository.GetByIdAsync(entity.CreatorId, cancellationToken);
+                creatorName = creator?.FullName ?? string.Empty;
+            }
+            if (entity.AssigneeId.HasValue && entity.AssigneeId.Value != Guid.Empty)
+            {
+                var assignee = await _userRepository.GetByIdAsync(entity.AssigneeId.Value, cancellationToken);
+                assigneeName = assignee?.FullName ?? string.Empty;
+            }
+
+            return new TaskDto
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                Description = entity.Description,
+                BoardId = entity.BoardId,
+                CreatorId = entity.CreatorId,
+                CreatorName = creatorName,
+                AssigneeId = entity.AssigneeId,
+                AssigneeName = assigneeName,
+                StartDate = entity.StartDate,
+                EndDate = entity.EndDate,
+                ActualClosingDate = entity.ActualClosingDate,
+                StoryPoints = entity.StoryPoints,
+                TaskTypeId = entity.TaskTypeId,
+                Priority = entity.Priority,
+                Severity = entity.Severity,
+                ParentTaskId = entity.ParentTaskId,
+                ColumnId = entity.ColumnId,
+                CreationDate = entity.CreationDate,
+                UpdateDate = entity.UpdateDate,
+                DeleteDate = entity.DeleteDate
+            };
         }
 
         /// <inheritdoc/>
@@ -266,6 +304,71 @@ namespace TMS.Application.Services
         public Task<List<TaskDto>> GetTasksByColumnIds(IEnumerable<Guid> columnIds, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
+        }
+
+        public async System.Threading.Tasks.Task MoveTaskToColumn(Guid taskId, Guid columnId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            var task = await _taskRepository.GetByIdAsync(taskId, cancellationToken)
+                ?? throw new NotFoundException(typeof(Infrastructure.DataModels.Task));
+
+            if (!await _accessService.HasPermissionAsync(userId, task.BoardId, ResourceType.Board, cancellationToken))
+            {
+                _logger.LogWarning("User {UserId} has no permission to move task {TaskId} on board {BoardId}", userId, task.Id, task.BoardId);
+                throw new ForbiddenException();
+            }
+
+            task.ColumnId = columnId;
+            task.UpdateDate = DateTime.UtcNow;
+
+            await _taskRepository.UpdateAsync(task, cancellationToken);
+
+            _logger.LogInformation("Task {TaskId} moved to column {ColumnId} by user {UserId}", taskId, columnId, userId);
+        }
+
+        public async Task<List<TaskDto>> GetTasksByAssigneeIdAsync(Guid assigneeId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            var tasks = await _taskRepository.GetTasksByAssigneeIdAsync(assigneeId, cancellationToken);
+
+            var userIds = tasks
+                .Select(t => t.CreatorId)
+                .Concat(tasks.Where(t => t.AssigneeId.HasValue).Select(t => t.AssigneeId.Value))
+                .Distinct()
+                .ToList();
+
+            var boardIds = tasks.Select(t => t.BoardId).Distinct().ToList();
+
+            var users = await _userRepository.GetAllAsync(cancellationToken);
+            var userDict = users
+                .Where(u => userIds.Contains(u.Id))
+                .ToDictionary(u => u.Id, u => u.FullName ?? string.Empty);
+
+            var boards = await _boardRepository.GetByIdsAsync(boardIds, cancellationToken);
+            var boardDict = boards.ToDictionary(b => b.Id, b => b.Name);
+
+            return tasks.Select(entity => new TaskDto
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                Description = entity.Description,
+                BoardId = entity.BoardId,
+                BoardName = boardDict.GetValueOrDefault(entity.BoardId, string.Empty),
+                CreatorId = entity.CreatorId,
+                CreatorName = userDict.GetValueOrDefault(entity.CreatorId, string.Empty),
+                AssigneeId = entity.AssigneeId,
+                AssigneeName = entity.AssigneeId.HasValue ? userDict.GetValueOrDefault(entity.AssigneeId.Value, string.Empty) : string.Empty,
+                StartDate = entity.StartDate,
+                EndDate = entity.EndDate,
+                ActualClosingDate = entity.ActualClosingDate,
+                StoryPoints = entity.StoryPoints,
+                TaskTypeId = entity.TaskTypeId,
+                Priority = entity.Priority,
+                Severity = entity.Severity,
+                ParentTaskId = entity.ParentTaskId,
+                ColumnId = entity.ColumnId,
+                CreationDate = entity.CreationDate,
+                UpdateDate = entity.UpdateDate,
+                DeleteDate = entity.DeleteDate
+            }).ToList();
         }
     }
 }
