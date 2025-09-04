@@ -6,6 +6,6 @@ namespace TMS.Application.Abstractions.Services
     {
         Task<CompanyInfoDto?> GetCompanyInfoByUserId(Guid userId, CancellationToken cancellationToken = default);
         Task GetTarifInfoByCompanyId(Guid companyId, Guid userId, CancellationToken cancellationToken = default);
-        Task GetCEOInfoByCompanyId(Guid companyId, Guid userId, CancellationToken cancellationToken = default);
+        Task<CEOSummaryDto?> GetCEOInfoByCompanyId(Guid companyId, Guid userId, CancellationToken cancellationToken = default);
     }
 }

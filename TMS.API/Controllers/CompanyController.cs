@@ -154,6 +154,7 @@ namespace TMS.API.Controllers
                 _logger.LogWarning("UpdateCompany called with null DTO");
                 return BadRequest("Company data is required.");
             }
+
             if (id != model.Id)
             {
                 _logger.LogWarning("UpdateCompany id mismatch: route id {RouteId}, body id {BodyId}", id, model.Id);
@@ -232,6 +233,7 @@ namespace TMS.API.Controllers
         [HttpGet("info")]
         public async Task<ActionResult<CompanyInfoViewModel>> GetCompanyInfoByUserId(
             [FromQuery] Guid userId,
+            [FromQuery] Guid companyId,
             CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Request to get company info for user {UserId}", userId);
@@ -242,6 +244,8 @@ namespace TMS.API.Controllers
                 _logger.LogWarning("No company info found for user {UserId}", userId);
                 return NotFound($"No company info found for user {userId}.");
             }
+
+            var CEOSummary = await _companyInfoService.GetCEOInfoByCompanyId(companyId, userId, cancellationToken);
 
             var viewModel = new CompanyInfoViewModel
             {
@@ -257,13 +261,33 @@ namespace TMS.API.Controllers
                 ContactEmail = companyInfoDto.ContactEmail,
                 ContactPhone = companyInfoDto.ContactPhone,
                 IsActive = companyInfoDto.IsActive,
-                Boards = companyInfoDto.Boards.Select(b => new BoardInfoViewModel
+                Boards = companyInfoDto.Boards.Select(
+                        b => new BoardInfoViewModel
+                        {
+                            Id = b.Id,
+                            Name = b.Name,
+                            OwnerFullName = b.OwnerFullName,
+                            IsPrivate = b.IsPrivate
+                        })
+                    .ToList(),
+                CeoSummary = new CEOSummaryDto()
                 {
-                    Id = b.Id,
-                    Name = b.Name,
-                    OwnerFullName = b.OwnerFullName,
-                    IsPrivate = b.IsPrivate
-                }).ToList()
+                    Boards = new CEOSummaryBoardDto[]
+                    {
+                        new CEOSummaryBoardDto()
+                        {
+                            Name = "тест",
+                            TasksDone = 2,
+                            TasksTotal = 5,
+                            TasksInProgress = 3
+                        }
+                    },
+                    TotalDone = CEOSummary.TotalDone,
+                    TotalTasks = CEOSummary.TotalTasks,
+                    TotalInProgress = CEOSummary.TotalInProgress,
+                    LeadBoard = "Доска альфа",
+                    MostActiveUser = CEOSummary.MostActiveUser,
+                }
             };
 
             return Ok(viewModel);

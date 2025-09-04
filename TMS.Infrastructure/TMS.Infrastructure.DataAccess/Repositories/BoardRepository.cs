@@ -50,5 +50,10 @@ namespace TMS.Infrastructure.DataAccess.Repositories
         {
             return await _context.Boards.Where(x => x.CompanyId == companyId && x.DeleteDate == null).ToListAsync(cancellationToken);
         }
+
+        public async Task<Board> GetBoardByBoardIdAsync(Guid boardId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Boards.FirstOrDefaultAsync(b => b.Id == boardId, cancellationToken);
+        }
     }
 }
