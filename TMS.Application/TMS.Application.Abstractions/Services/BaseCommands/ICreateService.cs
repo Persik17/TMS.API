@@ -18,7 +18,3 @@ namespace TMS.Application.Abstractions.Services.BaseCommands
         Task<TReadDto> CreateAsync(TCreateDto createDto, Guid userId, CancellationToken cancellationToken = default);
     }
 }
-
-
-
-

@@ -50,6 +50,8 @@ namespace TMS.Infrastructure.DataModels
         public Guid ColumnId { get; set; }
         public Column Column { get; set; }
 
+        public ICollection<TaskFile> Files { get; set; } = [];
+
         public Task() { }
     }
 }

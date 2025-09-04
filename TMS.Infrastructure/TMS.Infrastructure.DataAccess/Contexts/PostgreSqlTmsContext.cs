@@ -75,6 +75,8 @@ namespace TMS.Infrastructure.DataAccess.Contexts
         public DbSet<UserVerification> UserVerifications { get; set; }
 
         public DbSet<UserInvitation> UserInvitations { get; set; }
+        public DbSet<SystemSettings> SystemSettings { get; set; }
+        public DbSet<TaskFile> TaskFiles { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PostgreSqlTmsContext"/> class.
@@ -119,6 +121,24 @@ namespace TMS.Infrastructure.DataAccess.Contexts
                 .WithMany(c => c.Boards)
                 .HasForeignKey(b => b.CompanyId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.SystemSettings)
+                .WithOne(s => s.User)
+                .HasForeignKey<SystemSettings>(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.NotificationSettings)
+                .WithOne(s => s.User)
+                .HasForeignKey<NotificationSetting>(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TaskFile>()
+                .HasOne(tf => tf.Task)
+                .WithMany(t => t.Files)
+                .HasForeignKey(tf => tf.TaskId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

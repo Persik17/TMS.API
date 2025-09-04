@@ -30,6 +30,9 @@ namespace TMS.Infrastructure.DataModels
         public Guid? NotificationSettingsId { get; set; }
         public NotificationSetting? NotificationSettings { get; set; }
 
+        public Guid? SystemSettingsId { get; set; }
+        public SystemSettings? SystemSettings { get; set; }
+
         public Guid? RoleId { get; set; }
         public Role? Role { get; set; }
 

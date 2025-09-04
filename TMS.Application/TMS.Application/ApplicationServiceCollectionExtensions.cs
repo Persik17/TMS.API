@@ -30,6 +30,7 @@ namespace TMS.Application
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<ICompanyInfoService, CompanyInfoService>();
             services.AddScoped<INotificationSettingService, NotificationSettingService>();
+            services.AddScoped<ISystemSettingsService, SystemSettingsService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<ITaskTypeService, TaskTypeService>();

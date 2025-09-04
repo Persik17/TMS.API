@@ -55,5 +55,12 @@ namespace TMS.Infrastructure.DataAccess.Repositories
         {
             return await _context.Tasks.Where(x => columnIds.Contains(x.ColumnId) && x.DeleteDate == null).ToListAsync(cancellationToken);
         }
+
+        public async Task<List<Task>> GetTasksByAssigneeIdAsync(Guid assigneeId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Tasks
+                .Where(x => x.AssigneeId == assigneeId && x.DeleteDate == null)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

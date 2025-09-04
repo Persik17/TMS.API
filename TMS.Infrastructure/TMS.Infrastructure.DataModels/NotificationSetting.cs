@@ -9,6 +9,10 @@ namespace TMS.Infrastructure.DataModels
         public Guid Id { get; set; }
 
         [Required]
+        public Guid UserId { get; set; }
+        public User User { get; set; }
+
+        [Required]
         public bool EmailNotificationsEnabled { get; set; }
 
         [Required]

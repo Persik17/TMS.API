@@ -22,6 +22,7 @@ namespace TMS.Application.Services
         private readonly ICacheService _cacheService;
         private readonly ILogger<BoardService> _logger;
         private readonly IColumnRepository _columnRepository;
+        private readonly ITaskTypeRepository _taskTypeRepository;
         private readonly IColumnFactory _columnFactory;
 
         private static readonly TimeSpan BoardCacheExpiry = TimeSpan.FromMinutes(10);
@@ -39,6 +40,7 @@ namespace TMS.Application.Services
             ICacheService cacheService,
             ILogger<BoardService> logger,
             IColumnRepository columnRepository,
+            ITaskTypeRepository taskTypeRepository,
             IColumnFactory columnFactory)
         {
             _boardRepository = boardRepository ?? throw new ArgumentNullException(nameof(boardRepository));
@@ -46,6 +48,7 @@ namespace TMS.Application.Services
             _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _columnRepository = columnRepository ?? throw new ArgumentNullException(nameof(columnRepository));
+            _taskTypeRepository = taskTypeRepository ?? throw new ArgumentNullException(nameof(taskTypeRepository));
             _columnFactory = columnFactory ?? throw new ArgumentNullException(nameof(columnFactory));
         }
 
@@ -67,6 +70,36 @@ namespace TMS.Application.Services
             foreach (var column in columns)
             {
                 await _columnRepository.InsertAsync(column, cancellationToken);
+            }
+
+            var defaultTaskTypes = new[]
+            {
+                new TaskType
+                {
+                    Id = Guid.NewGuid(),
+                    BoardId = newBoard.Id,
+                    Name = "Задача",
+                    Description = "Обычная задача",
+                },
+                new TaskType
+                {
+                    Id = Guid.NewGuid(),
+                    BoardId = newBoard.Id,
+                    Name = "Юзерстори",
+                    Description = "User Story",
+                },
+                new TaskType
+                {
+                    Id = Guid.NewGuid(),
+                    BoardId = newBoard.Id,
+                    Name = "Эпик",
+                    Description = "Epic",
+                }
+            };
+
+            foreach (var taskType in defaultTaskTypes)
+            {
+                await _taskTypeRepository.InsertAsync(taskType, cancellationToken);
             }
 
             var createdBoard = await _boardRepository.GetByIdAsync(newBoard.Id, cancellationToken)

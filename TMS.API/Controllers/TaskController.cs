@@ -220,5 +220,31 @@ namespace TMS.API.Controllers
             await _taskService.DeleteCommentAsync(taskId, commentId, userId, cancellationToken);
             return NoContent();
         }
+
+        /// <summary>
+        /// Moves a task to another column.
+        /// </summary>
+        [HttpPost("{taskId:guid}/move")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> MoveTaskToColumn(Guid taskId, [FromQuery] Guid columnId, [FromQuery] Guid userId, CancellationToken cancellationToken)
+        {
+            if (taskId == Guid.Empty || columnId == Guid.Empty)
+            {
+                _logger.LogWarning("MoveTask called with invalid parameters");
+                return BadRequest("TaskId and ColumnId are required.");
+            }
+
+            await _taskService.MoveTaskToColumn(taskId, columnId, userId, cancellationToken);
+            return NoContent();
+        }
+
+        [HttpGet("my")]
+        [ProducesResponseType(typeof(List<TaskDto>), 200)]
+        public async Task<ActionResult<List<TaskDto>>> GetMyTasks(Guid userId, CancellationToken cancellationToken)
+        {
+            var tasks = await _taskService.GetTasksByAssigneeIdAsync(userId, userId, cancellationToken);
+            return Ok(tasks);
+        }
     }
 }

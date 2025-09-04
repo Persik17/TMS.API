@@ -10,6 +10,7 @@ namespace TMS.Application.Extensions
             return new Column
             {
                 Id = Guid.NewGuid(),
+                BoardId = dto.BoardId,
                 Name = dto.Name,
                 Description = dto.Description,
                 Order = dto.Order,
