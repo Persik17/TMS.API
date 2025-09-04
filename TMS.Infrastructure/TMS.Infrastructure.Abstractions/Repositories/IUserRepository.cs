@@ -27,5 +27,6 @@ namespace TMS.Infrastructure.Abstractions.Repositories
         Task<User> GetByTelegramAccountIdAsync(Guid telegramAccountId, CancellationToken cancellationToken = default);
 
         Task<List<User>> GetUsersByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default);
+        Task<List<User>> GetUsersByBoardIdAsync(Guid boardId, CancellationToken cancellationToken = default);
     }
 }

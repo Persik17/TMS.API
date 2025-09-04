@@ -27,6 +27,7 @@ namespace TMS.Infrastructure.DataAccess
             services.AddScoped<ICommentRepository, CommentRepository>();
             services.AddScoped<ICredentialRepository, CredentialRepository>();
             services.AddScoped<INotificationSettingRepository, NotificationSettingRepository>();
+            services.AddScoped<ISystemSettingsRepository, SystemSettingsRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<ITaskRepository, TaskRepository>();
             services.AddScoped<ITaskTypeRepository, TaskTypeRepository>();

@@ -19,7 +19,10 @@ namespace TMS.Infrastructure.DataAccess.Repositories
         {
             if (id == Guid.Empty) throw new GuidEmptyException();
 
-            return await _context.Users.FindAsync([id], cancellationToken: cancellationToken);
+            return await _context.Users
+                .Include(u => u.SystemSettings)
+                .Include(n => n.NotificationSettings)
+                .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
         }
 
         public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -71,6 +74,16 @@ namespace TMS.Infrastructure.DataAccess.Repositories
         {
             return await _context.Users
                 .Where(u => u.CompanyId == companyId && u.DeleteDate == null)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<User>> GetUsersByBoardIdAsync(Guid boardId, CancellationToken cancellationToken = default)
+        {
+            if (boardId == Guid.Empty) throw new GuidEmptyException();
+
+            return await _context.Users
+                .Include(u => u.Boards)
+                .Where(u => u.Boards.Any(b => b.Id == boardId) && u.DeleteDate == null)
                 .ToListAsync(cancellationToken);
         }
     }

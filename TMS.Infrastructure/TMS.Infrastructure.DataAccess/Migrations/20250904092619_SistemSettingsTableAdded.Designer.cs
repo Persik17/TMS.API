@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TMS.Infrastructure.DataAccess.Contexts;
@@ -11,9 +12,11 @@ using TMS.Infrastructure.DataAccess.Contexts;
 namespace TMS.Infrastructure.DataAccess.Migrations
 {
     [DbContext(typeof(PostgreSqlTmsContext))]
-    partial class PostgreSqlTmsContextModelSnapshot : ModelSnapshot
+    [Migration("20250904092619_SistemSettingsTableAdded")]
+    partial class SistemSettingsTableAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -311,13 +314,7 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                     b.Property<bool>("TelegramNotificationsEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
 
                     b.ToTable("NotificationSettings");
                 });
@@ -590,6 +587,8 @@ namespace TMS.Infrastructure.DataAccess.Migrations
 
                     b.HasIndex("CompanyId");
 
+                    b.HasIndex("NotificationSettingsId");
+
                     b.HasIndex("RoleId");
 
                     b.HasIndex("TelegramId");
@@ -786,17 +785,6 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                     b.Navigation("Credential");
                 });
 
-            modelBuilder.Entity("TMS.Infrastructure.DataModels.NotificationSetting", b =>
-                {
-                    b.HasOne("TMS.Infrastructure.DataModels.User", "User")
-                        .WithOne("NotificationSettings")
-                        .HasForeignKey("TMS.Infrastructure.DataModels.NotificationSetting", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("TMS.Infrastructure.DataModels.SystemSettings", b =>
                 {
                     b.HasOne("TMS.Infrastructure.DataModels.User", "User")
@@ -873,6 +861,10 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("TMS.Infrastructure.DataModels.NotificationSetting", "NotificationSettings")
+                        .WithMany()
+                        .HasForeignKey("NotificationSettingsId");
+
                     b.HasOne("TMS.Infrastructure.DataModels.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId");
@@ -882,6 +874,8 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                         .HasForeignKey("TelegramId");
 
                     b.Navigation("Company");
+
+                    b.Navigation("NotificationSettings");
 
                     b.Navigation("Role");
 
@@ -918,8 +912,6 @@ namespace TMS.Infrastructure.DataAccess.Migrations
 
             modelBuilder.Entity("TMS.Infrastructure.DataModels.User", b =>
                 {
-                    b.Navigation("NotificationSettings");
-
                     b.Navigation("SystemSettings");
                 });
 #pragma warning restore 612, 618
