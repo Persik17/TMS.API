@@ -57,5 +57,16 @@ namespace TMS.Infrastructure.DataAccess.Repositories
                 .Where(b => ids.Contains(b.Id))
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<List<Board>> GetBoardsByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Boards
+                .Include(b => b.Users)
+                .Where(board =>
+                    board.HeadId == userId ||
+                    board.Users.Any(u => u.Id == userId)
+                )
+                .ToListAsync(cancellationToken);
+        }
     }
 }

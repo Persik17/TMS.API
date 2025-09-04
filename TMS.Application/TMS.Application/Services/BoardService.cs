@@ -4,6 +4,7 @@ using TMS.Abstractions.Exceptions;
 using TMS.Application.Abstractions.Cache;
 using TMS.Application.Abstractions.Factories;
 using TMS.Application.Abstractions.Services;
+using TMS.Application.Dto;
 using TMS.Application.Dto.Board;
 using TMS.Application.Extensions;
 using TMS.Infrastructure.Abstractions.Repositories;
@@ -24,6 +25,7 @@ namespace TMS.Application.Services
         private readonly IColumnRepository _columnRepository;
         private readonly ITaskTypeRepository _taskTypeRepository;
         private readonly IColumnFactory _columnFactory;
+        private readonly ITaskRepository _taskRepository;
 
         private static readonly TimeSpan BoardCacheExpiry = TimeSpan.FromMinutes(10);
 
@@ -41,7 +43,8 @@ namespace TMS.Application.Services
             ILogger<BoardService> logger,
             IColumnRepository columnRepository,
             ITaskTypeRepository taskTypeRepository,
-            IColumnFactory columnFactory)
+            IColumnFactory columnFactory,
+            ITaskRepository taskRepository)
         {
             _boardRepository = boardRepository ?? throw new ArgumentNullException(nameof(boardRepository));
             _accessService = accessService ?? throw new ArgumentNullException(nameof(accessService));
@@ -50,6 +53,7 @@ namespace TMS.Application.Services
             _columnRepository = columnRepository ?? throw new ArgumentNullException(nameof(columnRepository));
             _taskTypeRepository = taskTypeRepository ?? throw new ArgumentNullException(nameof(taskTypeRepository));
             _columnFactory = columnFactory ?? throw new ArgumentNullException(nameof(columnFactory));
+            _taskRepository = taskRepository;
         }
 
         /// <inheritdoc/>
@@ -246,6 +250,25 @@ namespace TMS.Application.Services
             await _cacheService.SetAsync(cacheKey, boardDtos, BoardCacheExpiry);
 
             return boardDtos;
+        }
+
+        public async Task<List<GlobalSearchResultDto>> GlobalSearchTasksAsync(string query, Guid userId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return [];
+
+            var boards = await _boardRepository.GetBoardsByUserIdAsync(userId, cancellationToken);
+            var boardIds = boards.Select(b => b.Id).ToList();
+
+            var tasks = await _taskRepository.SearchTasksByBoardIdsAsync(query, boardIds, cancellationToken);
+            var taskResults = tasks.Select(t => new GlobalSearchResultDto
+            {
+                Type = "task",
+                Id = t.Id,
+                Name = t.Name
+            }).ToList();
+
+            return taskResults;
         }
     }
 }

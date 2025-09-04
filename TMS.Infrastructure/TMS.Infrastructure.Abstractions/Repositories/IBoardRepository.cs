@@ -12,5 +12,6 @@ namespace TMS.Infrastructure.Abstractions.Repositories
     {
         Task<List<Board>> GetBoardsByCompanyIdAsync(Guid companyId, CancellationToken cancellationToken = default);
         Task<List<Board>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
+        Task<List<Board>> GetBoardsByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
     }
 }

@@ -13,11 +13,12 @@ namespace TMS.Application.Services
 {
     /// <summary>
     /// Provides a service for managing columns.
-    /// Implements operations for creating, retrieving, and updating columns.
+    /// Implements operations for creating, retrieving, updating, and deleting columns (with tasks).
     /// </summary>
     public class ColumnService : IColumnService
     {
         private readonly IColumnRepository _columnRepository;
+        private readonly ITaskRepository _taskRepository; // Добавлено!
         private readonly IAccessService _accessService;
         private readonly ICacheService _cacheService;
         private readonly ILogger<ColumnService> _logger;
@@ -27,17 +28,15 @@ namespace TMS.Application.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnService"/> class.
         /// </summary>
-        /// <param name="columnRepository">The repository for performing column operations.</param>
-        /// <param name="accessService">The access service for permission checks.</param>
-        /// <param name="cacheService">The cache service for caching column data.</param>
-        /// <param name="logger">The logger for logging column service events.</param>
         public ColumnService(
             IColumnRepository columnRepository,
+            ITaskRepository taskRepository,
             IAccessService accessService,
             ICacheService cacheService,
             ILogger<ColumnService> logger)
         {
             _columnRepository = columnRepository ?? throw new ArgumentNullException(nameof(columnRepository));
+            _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
             _accessService = accessService ?? throw new ArgumentNullException(nameof(accessService));
             _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -163,6 +162,16 @@ namespace TMS.Application.Services
             {
                 _logger.LogWarning("User {UserId} has no permission to delete column {ColumnId}", userId, id);
                 throw new ForbiddenException();
+            }
+
+            var tasks = await _taskRepository.GetTasksByColumnIdsAsync(new List<Guid> { id }, cancellationToken);
+            if (tasks != null && tasks.Count > 0)
+            {
+                foreach (var task in tasks)
+                {
+                    await _taskRepository.DeleteAsync(task.Id, cancellationToken);
+                    _logger.LogInformation("Task with id {TaskId} deleted along with column {ColumnId}", task.Id, id);
+                }
             }
 
             await _columnRepository.DeleteAsync(id, cancellationToken);

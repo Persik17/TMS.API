@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TMS.API.ViewModels.Board;
 using TMS.Application.Abstractions.Services;
+using TMS.Application.Dto;
 using TMS.Application.Dto.Board;
 using TMS.Application.Dto.Column;
 
@@ -293,6 +294,20 @@ namespace TMS.API.Controllers
         {
             var analytics = await _boardInfoService.GetBoardAnalyticsAsync(boardId, userId, cancellationToken);
             return Ok(analytics);
+        }
+
+        [HttpGet("search-tasks")]
+        public async Task<ActionResult<List<GlobalSearchResultDto>>> GlobalTaskSearch(
+            [FromRoute] Guid companyId,
+            [FromQuery] string query,
+            [FromQuery] Guid userId,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return Ok(new List<GlobalSearchResultDto>());
+
+            var results = await _boardService.GlobalSearchTasksAsync(query, userId, cancellationToken);
+            return Ok(results);
         }
     }
 }

@@ -62,5 +62,15 @@ namespace TMS.Infrastructure.DataAccess.Repositories
                 .Where(x => x.AssigneeId == assigneeId && x.DeleteDate == null)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<List<Task>> SearchTasksByBoardIdsAsync(string query, List<Guid> boardIds, CancellationToken cancellationToken = default)
+        {
+            if (boardIds == null || boardIds.Count == 0)
+                return new List<Task>();
+
+            return await _context.Tasks
+                .Where(t => boardIds.Contains(t.BoardId) && t.Name.Contains(query))
+                .ToListAsync(cancellationToken);
+        }
     }
 }

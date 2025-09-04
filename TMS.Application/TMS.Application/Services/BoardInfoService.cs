@@ -99,6 +99,16 @@ namespace TMS.Application.Services
             var columnIds = columns.Select(c => c.Id).ToList();
             var tasks = await _taskRepository.GetTasksByColumnIdsAsync(columnIds, cancellationToken);
 
+            if (tasks.Count == 0)
+            {
+                return new BoardAnalyticsDto
+                {
+                    Velocity = new List<VelocityPointDto>(),
+                    BurnDown = new List<BurnDownPointDto>(),
+                    CFD = new List<CfdPointDto>()
+                };
+            }
+
             var velocity = tasks
                 .Where(t => t.EndDate.HasValue)
                 .GroupBy(t => t.EndDate.Value.ToString("yyyy-MM"))

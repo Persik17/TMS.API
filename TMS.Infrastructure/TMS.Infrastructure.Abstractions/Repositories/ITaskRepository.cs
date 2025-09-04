@@ -12,5 +12,6 @@ namespace TMS.Infrastructure.Abstractions.Repositories
         Task<List<DataModels.Task>> GetTasksByColumnIdAsync(Guid columnId, CancellationToken cancellationToken = default);
         Task<List<DataModels.Task>> GetTasksByColumnIdsAsync(IEnumerable<Guid> columnIds, CancellationToken cancellationToken = default);
         Task<List<DataModels.Task>> GetTasksByAssigneeIdAsync(Guid assigneeId, CancellationToken cancellationToken = default);
+        Task<List<DataModels.Task>> SearchTasksByBoardIdsAsync(string query, List<Guid> boardIds, CancellationToken cancellationToken = default);
     }
 }
