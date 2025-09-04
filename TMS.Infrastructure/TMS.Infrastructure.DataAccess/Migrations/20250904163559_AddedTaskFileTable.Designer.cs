@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TMS.Infrastructure.DataAccess.Contexts;
@@ -11,9 +12,11 @@ using TMS.Infrastructure.DataAccess.Contexts;
 namespace TMS.Infrastructure.DataAccess.Migrations
 {
     [DbContext(typeof(PostgreSqlTmsContext))]
-    partial class PostgreSqlTmsContextModelSnapshot : ModelSnapshot
+    [Migration("20250904163559_AddedTaskFileTable")]
+    partial class AddedTaskFileTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
