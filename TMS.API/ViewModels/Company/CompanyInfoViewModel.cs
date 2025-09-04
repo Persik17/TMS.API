@@ -1,4 +1,5 @@
 ﻿using TMS.API.ViewModels.Board;
+using TMS.Application.Dto.Company;
 
 namespace TMS.API.ViewModels.Company
 {
@@ -17,5 +18,6 @@ namespace TMS.API.ViewModels.Company
         public string ContactPhone { get; set; }
         public bool IsActive { get; set; }
         public List<BoardInfoViewModel> Boards { get; set; } = new();
+        public CEOSummaryDto CeoSummary { get; set; }
     }
 }

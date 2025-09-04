@@ -1,20 +1,18 @@
 ﻿using Microsoft.Extensions.Logging;
-using TMS.Abstractions.Enums;
-using TMS.Abstractions.Exceptions;
 using TMS.Application.Abstractions.Cache;
-using TMS.Application.Abstractions.Security;
 using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto.Board;
 using TMS.Application.Dto.Company;
-using TMS.Application.Extensions;
 using TMS.Infrastructure.Abstractions.Repositories;
-
+using TMS.Infrastructure.DataModels;
 using Task = System.Threading.Tasks.Task;
 
 namespace TMS.Application.Services
 {
     public class CompanyInfoService : ICompanyInfoService
     {
+        private readonly ITaskRepository _taskRepository;
+        private readonly IColumnRepository _columnRepository;
         private readonly ICompanyRepository _companyRepository;
         private readonly IBoardRepository _boardRepository;
         private readonly IAccessService _accessService;
@@ -24,12 +22,16 @@ namespace TMS.Application.Services
         private static readonly TimeSpan CompanyInfoCacheExpiry = TimeSpan.FromMinutes(10);
 
         public CompanyInfoService(
+            ITaskRepository taskRepository,
+            IColumnRepository columnRepository,
             ICompanyRepository companyRepository,
             IBoardRepository boardRepository,
             IAccessService accessService,
             ICacheService cacheService,
             ILogger<CompanyService> logger)
         {
+            _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
+            _columnRepository = columnRepository ?? throw new ArgumentNullException(nameof(columnRepository));
             _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
             _boardRepository = boardRepository ?? throw new ArgumentNullException(nameof(boardRepository));
             _accessService = accessService ?? throw new ArgumentNullException(nameof(accessService));
@@ -37,7 +39,9 @@ namespace TMS.Application.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<CompanyInfoDto?> GetCompanyInfoByUserId(Guid userId, CancellationToken cancellationToken = default)
+        public async Task<CompanyInfoDto?> GetCompanyInfoByUserId(
+            Guid userId,
+            CancellationToken cancellationToken = default)
         {
             var cacheKey = $"company-info:{userId}";
             var cached = await _cacheService.GetAsync<CompanyInfoDto>(cacheKey);
@@ -58,13 +62,15 @@ namespace TMS.Application.Services
             var companyBoards = await _boardRepository.GetBoardsByCompanyIdAsync(company.Id, cancellationToken);
             var userBoards = companyBoards.Where(b => b.HeadId == userId || b.Users.Any(u => u.Id == userId)).ToList();
 
-            var boardsDto = userBoards.Select(b => new BoardInfoDto
-            {
-                Id = b.Id,
-                Name = b.Name,
-                OwnerFullName = b.Head?.FullName ?? "—",
-                IsPrivate = b.IsPrivate
-            }).ToList();
+            var boardsDto = userBoards.Select(
+                    b => new BoardInfoDto
+                    {
+                        Id = b.Id,
+                        Name = b.Name,
+                        OwnerFullName = b.Head?.FullName ?? "—",
+                        IsPrivate = b.IsPrivate
+                    })
+                .ToList();
 
             var dto = new CompanyInfoDto
             {
@@ -92,9 +98,48 @@ namespace TMS.Application.Services
             throw new NotImplementedException();
         }
 
-        public Task GetCEOInfoByCompanyId(Guid companyId, Guid userId, CancellationToken cancellationToken = default)
+        public async Task<CEOSummaryDto?> GetCEOInfoByCompanyId(
+            Guid companyId,
+            Guid userId,
+            CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var cacheKey = $"company-info:{userId}";
+            var cached = await _cacheService.GetAsync<CEOSummaryDto>(cacheKey);
+
+            if (cached != null)
+            {
+                _logger.LogDebug("CEO summary info for user {UserId} found in cache.", userId);
+                return cached;
+            }
+
+            var companyBoards = await _boardRepository.GetBoardsByCompanyIdAsync(companyId, cancellationToken);
+            List<Column> columns = new List<Column>();
+
+            foreach (var companyBoard in companyBoards)
+                columns = await _columnRepository.GetColumnsByBoardIdAsync(companyBoard.Id, cancellationToken);
+
+            var tasks = await _taskRepository.GetTasksByColumnIdsAsync(columns.Select(c => c.Id), cancellationToken);
+
+            var totalTasks = tasks.Count();
+            var completedTasks = 20;
+            var tasksInWork = tasks.Count(t => t.AssigneeId != null);
+
+            var groupBoards = tasks
+                .GroupBy(b => b.BoardId)
+                .OrderBy(b => b);
+
+            var leaderBoardId = groupBoards.Max(b => b.Key);
+            var leaderBoard = await _boardRepository.GetBoardByBoardIdAsync(leaderBoardId, cancellationToken);
+            
+
+            return new CEOSummaryDto
+            {
+                TotalTasks = totalTasks,
+                TotalDone = completedTasks,
+                TotalInProgress = tasksInWork,
+                LeadBoard = leaderBoard.Name,
+                MostActiveUser = "Иван"
+            };
         }
     }
 }
