@@ -1,6 +1,7 @@
 ﻿using TMS.Application.Abstractions.Services.BaseCommands;
 using TMS.Application.Dto;
 using TMS.Application.Dto.Board;
+using TMS.Application.Dto.User;
 
 namespace TMS.Application.Abstractions.Services
 {
@@ -16,5 +17,6 @@ namespace TMS.Application.Abstractions.Services
     {
         Task<List<BoardDto>> GetBoardsByCompanyIdAsync(Guid companyId, Guid userId, CancellationToken cancellationToken = default);
         Task<List<GlobalSearchResultDto>> GlobalSearchTasksAsync(string query, Guid userId, CancellationToken cancellationToken = default);
+        Task<List<UserDto>> GetUsersByBoardIdAsync(Guid boardId, Guid userId, CancellationToken cancellationToken = default);
     }
 }

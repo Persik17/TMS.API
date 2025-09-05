@@ -50,11 +50,9 @@ namespace TMS.Application.Security
             if (role.Name.Equals("Owner", StringComparison.OrdinalIgnoreCase) ||
                 role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase))
             {
-                // Owner и Admin видят всё
                 return true;
             }
 
-            // 3. Пользователь — проверяем доступ к ресурсу
             switch (resourceType)
             {
                 case ResourceType.Company:
@@ -67,15 +65,13 @@ namespace TMS.Application.Security
                     var board = await _boardRepository.GetByIdAsync(resourceId, cancellationToken);
                     if (board == null) return false;
                     if (board.HeadId == user.Id) return true;
-                    if (board.Users.Any(u => u.Id == user.Id)) return true;
-                    break;
+                    if (board.BoardUsers.Any(bu => bu.UsersId == user.Id)) return true; break;
 
                 case ResourceType.Column:
                 case ResourceType.User:
                     break;
             }
 
-            // Если ничего не совпало — нет доступа
             return false;
         }
     }

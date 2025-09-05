@@ -77,6 +77,7 @@ namespace TMS.Infrastructure.DataAccess.Contexts
         public DbSet<UserInvitation> UserInvitations { get; set; }
         public DbSet<SystemSettings> SystemSettings { get; set; }
         public DbSet<TaskFile> TaskFiles { get; set; }
+        public DbSet<BoardUser> BoardUsers { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PostgreSqlTmsContext"/> class.
@@ -112,9 +113,18 @@ namespace TMS.Infrastructure.DataAccess.Contexts
                 .HasForeignKey(b => b.HeadId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Board>()
-                .HasMany(b => b.Users)
-                .WithMany(u => u.Boards);
+            modelBuilder.Entity<BoardUser>()
+                .HasKey(bu => new { bu.BoardsId, bu.UsersId });
+
+            modelBuilder.Entity<BoardUser>()
+                .HasOne(bu => bu.Board)
+                .WithMany(b => b.BoardUsers)
+                .HasForeignKey(bu => bu.BoardsId);
+
+            modelBuilder.Entity<BoardUser>()
+                .HasOne(bu => bu.User)
+                .WithMany(u => u.BoardUsers)
+                .HasForeignKey(bu => bu.UsersId);
 
             modelBuilder.Entity<Board>()
                 .HasOne(b => b.Company)

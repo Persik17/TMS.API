@@ -6,6 +6,7 @@ using TMS.Application.Abstractions.Factories;
 using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto;
 using TMS.Application.Dto.Board;
+using TMS.Application.Dto.User;
 using TMS.Application.Extensions;
 using TMS.Infrastructure.Abstractions.Repositories;
 using TMS.Infrastructure.DataModels;
@@ -19,6 +20,7 @@ namespace TMS.Application.Services
     public class BoardService : IBoardService
     {
         private readonly IBoardRepository _boardRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IAccessService _accessService;
         private readonly ICacheService _cacheService;
         private readonly ILogger<BoardService> _logger;
@@ -38,6 +40,7 @@ namespace TMS.Application.Services
         /// <param name="logger">The logger for logging board service events.</param>
         public BoardService(
             IBoardRepository boardRepository,
+            IUserRepository userRepository,
             IAccessService accessService,
             ICacheService cacheService,
             ILogger<BoardService> logger,
@@ -47,6 +50,7 @@ namespace TMS.Application.Services
             ITaskRepository taskRepository)
         {
             _boardRepository = boardRepository ?? throw new ArgumentNullException(nameof(boardRepository));
+            _userRepository = userRepository;
             _accessService = accessService ?? throw new ArgumentNullException(nameof(accessService));
             _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -269,6 +273,15 @@ namespace TMS.Application.Services
             }).ToList();
 
             return taskResults;
+        }
+
+        public async Task<List<UserDto>> GetUsersByBoardIdAsync(Guid boardId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            if (!await _accessService.HasPermissionAsync(userId, boardId, ResourceType.Board, cancellationToken))
+                throw new ForbiddenException();
+
+            var users = await _userRepository.GetUsersByBoardIdAsync(boardId, cancellationToken);
+            return [.. users.Select(u => u.ToUserDto())];
         }
     }
 }

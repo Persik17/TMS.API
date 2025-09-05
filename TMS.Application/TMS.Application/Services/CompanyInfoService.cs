@@ -67,7 +67,7 @@ namespace TMS.Application.Services
             }
 
             var companyBoards = await _boardRepository.GetBoardsByCompanyIdAsync(company.Id, cancellationToken);
-            var userBoards = companyBoards.Where(b => b.HeadId == userId || b.Users.Any(u => u.Id == userId)).ToList();
+            var userBoards = companyBoards.Where(b => b.HeadId == userId || b.BoardUsers.Any(u => u.UsersId == userId)).ToList();
 
             var boardsDto = userBoards.Select(
                     b => new BoardInfoDto

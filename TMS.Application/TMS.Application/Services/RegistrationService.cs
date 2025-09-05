@@ -99,9 +99,6 @@ namespace TMS.Application.Services
 
                 var code = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
 
-                //TODO сделать транзакцию, предварительно сделав unitOfWork
-                // using var transaction = await _userRepository.BeginTransactionAsync(cancellationToken);
-
                 var verification = new UserVerification
                 {
                     Id = Guid.NewGuid(),
@@ -131,16 +128,14 @@ namespace TMS.Application.Services
                 };
                 await _credentialRepository.InsertAsync(credential, cancellationToken);
 
-                //await _notifyService.PublishAsync(new UserVerificationCreatedEvent
-                //{
-                //    VerificationId = verification.Id,
-                //    Target = verification.Email,
-                //    Code = verification.Code,
-                //    Expiration = verification.Expiration,
-                //    Message = "Ваш код подтверждения"
-                //}, cancellationToken);
-
-                // await transaction.CommitAsync(cancellationToken);
+                await _notifyService.PublishAsync(new UserVerificationCreatedEvent
+                {
+                    VerificationId = verification.Id,
+                    Target = verification.Email,
+                    Code = verification.Code,
+                    Expiration = verification.Expiration,
+                    Message = "Ваш код подтверждения"
+                }, cancellationToken);
 
                 _logger.LogInformation("Registration verification created for {Target}", dto.Email);
 
@@ -154,7 +149,6 @@ namespace TMS.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Registration failed: unhandled exception for email: {Email}", dto?.Email);
-                // await transaction?.RollbackAsync(cancellationToken);
                 return new RegistrationResultDto { Success = false, Error = "Registration failed due to an internal error." };
             }
         }

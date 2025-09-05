@@ -28,7 +28,7 @@ namespace TMS.Application.Extensions
             return new UserDto
             {
                 Id = user.Id,
-                FullName = user.FullName,
+                FullName = string.IsNullOrWhiteSpace(user.FullName) ? user.Email : user.FullName,
                 Email = user.Email,
                 TelegramId = user.TelegramId,
                 Timezone = user.Timezone,

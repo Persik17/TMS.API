@@ -82,7 +82,7 @@ namespace TMS.API
             app.UseHttpsRedirection();
 
             // Apply global exception handling
-            //ConfigureMiddlewares.Apply(app);
+            ConfigureMiddlewares.Apply(app);
 
             app.UseAuthentication();
             app.UseAuthorization();

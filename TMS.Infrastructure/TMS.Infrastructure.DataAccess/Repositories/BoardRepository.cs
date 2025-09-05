@@ -16,7 +16,10 @@ namespace TMS.Infrastructure.DataAccess.Repositories
 
         public async Task<Board> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await _context.Boards.FindAsync([id], cancellationToken: cancellationToken);
+            return await _context.Boards
+                .Include(b => b.BoardUsers)
+                    .ThenInclude(bu => bu.User)
+                .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
         }
 
         public async Task<IEnumerable<Board>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -61,12 +64,29 @@ namespace TMS.Infrastructure.DataAccess.Repositories
         public async Task<List<Board>> GetBoardsByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             return await _context.Boards
-                .Include(b => b.Users)
+                .Include(b => b.BoardUsers)
+                    .ThenInclude(bu => bu.User)
                 .Where(board =>
                     board.HeadId == userId ||
-                    board.Users.Any(u => u.Id == userId)
+                    board.BoardUsers.Any(bu => bu.UsersId == userId)
                 )
                 .ToListAsync(cancellationToken);
+        }
+
+        public async System.Threading.Tasks.Task AddUserToBoardAsync(Guid boardId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            var exists = await _context.Set<BoardUser>()
+                .AnyAsync(bu => bu.BoardsId == boardId && bu.UsersId == userId, cancellationToken);
+            if (exists)
+                return;
+
+            var boardUser = new BoardUser
+            {
+                BoardsId = boardId,
+                UsersId = userId
+            };
+            _context.Set<BoardUser>().Add(boardUser);
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

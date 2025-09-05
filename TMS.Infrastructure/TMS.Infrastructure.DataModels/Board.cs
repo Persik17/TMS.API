@@ -30,7 +30,7 @@ namespace TMS.Infrastructure.DataModels
         [Required]
         public bool IsPrivate { get; set; }
 
-        public List<User> Users { get; set; } = [];
+        public List<BoardUser> BoardUsers { get; set; } = [];
         public List<Column> Columns { get; set; } = [];
         public List<TaskType> TaskTypes { get; set; } = [];
 

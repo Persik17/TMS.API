@@ -12,6 +12,7 @@ namespace TMS.Application.Services
     public class InvitationService : IInvitationService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IBoardRepository _boardRepository;
         private readonly IUserInvitationRepository _invitationRepository;
         private readonly IRoleRepository _roleRepository;
         private readonly INotifyService _notifyService;
@@ -19,12 +20,14 @@ namespace TMS.Application.Services
 
         public InvitationService(
             IUserRepository userRepository,
+            IBoardRepository boardRepository,
             IUserInvitationRepository invitationRepository,
             IRoleRepository roleRepository,
             INotifyService notifyService,
             ILogger<InvitationService> logger)
         {
             _userRepository = userRepository;
+            _boardRepository = boardRepository;
             _invitationRepository = invitationRepository;
             _roleRepository = roleRepository;
             _notifyService = notifyService;
@@ -40,7 +43,6 @@ namespace TMS.Application.Services
             {
                 if (existingUser.Status != (int)UserStatus.Invited)
                     throw new InvalidOperationException("User with this email already exists and is active.");
-                // Можно реализовать повторную отправку приглашения
             }
             else
             {
@@ -56,7 +58,6 @@ namespace TMS.Application.Services
                 await _userRepository.InsertAsync(user, cancellationToken);
                 existingUser = user;
 
-                // Привязываем роли через Membership
                 foreach (var roleName in dto.Roles)
                 {
                     var role = await _roleRepository.GetByNameAsync(roleName, cancellationToken);
@@ -64,6 +65,13 @@ namespace TMS.Application.Services
                         throw new Exception($"Role '{roleName}' not found");
                 }
             }
+
+            var boardUser = new BoardUser
+            {
+                BoardsId = dto.BoardId,
+                UsersId = existingUser.Id
+            };
+            await _boardRepository.AddUserToBoardAsync(dto.BoardId, existingUser.Id, cancellationToken);
 
             var invitation = new UserInvitation
             {

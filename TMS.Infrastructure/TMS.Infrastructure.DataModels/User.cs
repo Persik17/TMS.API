@@ -44,7 +44,7 @@ namespace TMS.Infrastructure.DataModels
         [MaxLength(20)]
         public string? Phone { get; set; }
 
-        public List<Board> Boards { get; set; } = [];
+        public List<BoardUser> BoardUsers { get; set; } = [];
 
         public User() { }
     }

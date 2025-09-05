@@ -139,7 +139,7 @@ namespace TMS.Application.Services
             if (entity.AssigneeId.HasValue && entity.AssigneeId.Value != Guid.Empty)
             {
                 var assignee = await _userRepository.GetByIdAsync(entity.AssigneeId.Value, cancellationToken);
-                assigneeName = assignee?.FullName ?? string.Empty;
+                assigneeName = string.IsNullOrWhiteSpace(assignee.FullName) ? assignee.Email : assignee.FullName;
             }
 
             return new TaskDto

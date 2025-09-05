@@ -69,7 +69,7 @@ namespace TMS.Infrastructure.DataAccess.Repositories
                 return new List<Task>();
 
             return await _context.Tasks
-                .Where(t => boardIds.Contains(t.BoardId) && t.Name.Contains(query))
+                .Where(t => boardIds.Contains(t.BoardId) && t.Name.Contains(query) && t.DeleteDate == null)
                 .ToListAsync(cancellationToken);
         }
     }

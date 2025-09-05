@@ -82,8 +82,9 @@ namespace TMS.Infrastructure.DataAccess.Repositories
             if (boardId == Guid.Empty) throw new GuidEmptyException();
 
             return await _context.Users
-                .Include(u => u.Boards)
-                .Where(u => u.Boards.Any(b => b.Id == boardId) && u.DeleteDate == null)
+                .Include(u => u.BoardUsers)
+                    .ThenInclude(bu => bu.Board)
+                .Where(u => u.BoardUsers.Any(bu => bu.BoardsId == boardId) && u.DeleteDate == null)
                 .ToListAsync(cancellationToken);
         }
 

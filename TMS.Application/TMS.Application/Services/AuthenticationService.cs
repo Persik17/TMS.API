@@ -122,15 +122,15 @@ namespace TMS.Application.Services
 
                 await _userVerificationRepository.InsertAsync(verification, cancellationToken);
 
-                //await _notifyService.PublishAsync(new UserVerificationCreatedEvent
-                //{
-                //    VerificationId = verification.Id,
-                //    Target = verification.Email,
-                //    Type = verification.Type,
-                //    Code = verification.Code,
-                //    Expiration = verification.Expiration,
-                //    Message = "Ваш код подтверждения"
-                //}, cancellationToken);
+                await _notifyService.PublishAsync(new UserVerificationCreatedEvent
+                {
+                    VerificationId = verification.Id,
+                    Target = verification.Email,
+                    Type = verification.Type,
+                    Code = verification.Code,
+                    Expiration = verification.Expiration,
+                    Message = "Ваш код подтверждения"
+                }, cancellationToken);
 
                 return new AuthenticationResultDto
                 {

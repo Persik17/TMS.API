@@ -5,6 +5,8 @@ using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto;
 using TMS.Application.Dto.Board;
 using TMS.Application.Dto.Column;
+using TMS.Application.Dto.User;
+using TMS.Application.Services;
 
 namespace TMS.API.Controllers
 {
@@ -19,17 +21,20 @@ namespace TMS.API.Controllers
         private readonly IBoardService _boardService;
         private readonly IBoardInfoService _boardInfoService;
         private readonly IColumnService _columnService;
+        private readonly IInvitationService _invitationService;
         private readonly ILogger<BoardController> _logger;
 
         public BoardController(
             IBoardService boardService,
             IBoardInfoService boardInfoService,
             IColumnService columnService,
+            IInvitationService invitationService,
             ILogger<BoardController> logger)
         {
             _boardService = boardService;
             _boardInfoService = boardInfoService;
             _columnService = columnService;
+            _invitationService = invitationService;
             _logger = logger;
         }
 
@@ -308,6 +313,35 @@ namespace TMS.API.Controllers
 
             var results = await _boardService.GlobalSearchTasksAsync(query, userId, cancellationToken);
             return Ok(results);
+        }
+
+        [HttpPost("{boardId:guid}/invite-user")]
+        public async Task<IActionResult> InviteUserToBoard(
+            [FromRoute] Guid companyId,
+            [FromRoute] Guid boardId,
+            [FromBody] UserInviteDto dto,
+            [FromQuery] Guid userId,
+            CancellationToken cancellationToken)
+        {
+            if (dto == null)
+                return BadRequest("Invitation data is required.");
+
+            dto.BoardId = boardId;
+
+            await _invitationService.InviteByEmailAsync(dto, userId, cancellationToken);
+
+            return Ok(new { success = true });
+        }
+
+        [HttpGet("{boardId:guid}/users")]
+        public async Task<ActionResult<List<UserDto>>> GetBoardUsers(
+            [FromRoute] Guid companyId,
+            [FromRoute] Guid boardId,
+            [FromQuery] Guid userId,
+            CancellationToken cancellationToken)
+        {
+            var users = await _boardService.GetUsersByBoardIdAsync(boardId, userId, cancellationToken);
+            return Ok(users);
         }
     }
 }
