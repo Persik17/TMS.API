@@ -2,10 +2,12 @@
 using TMS.Abstractions.Enums;
 using TMS.Abstractions.Exceptions;
 using TMS.Application.Abstractions.Factories;
+using TMS.Application.Abstractions.Messaging;
 using TMS.Application.Abstractions.Security;
 using TMS.Application.Abstractions.Services;
 using TMS.Application.Dto.Verification;
 using TMS.Application.Extensions;
+using TMS.Contracts.Events;
 using TMS.Infrastructure.Abstractions.Repositories;
 using TMS.Infrastructure.DataModels;
 
@@ -16,6 +18,7 @@ namespace TMS.Application.Services
     /// </summary>
     public class VerificationService : IVerificationService
     {
+        private readonly INotifyService _notifyService;
         private readonly IUserVerificationRepository _userVerificationRepository;
         private readonly IUserInvitationRepository _userInvitationRepository;
         private readonly ICompanyRepository _companyRepository;
@@ -32,6 +35,7 @@ namespace TMS.Application.Services
         /// <param name="userRepository">The repository for accessing and updating user information.</param>
         /// <param name="logger">The logger for logging verification service events.</param>
         public VerificationService(
+            INotifyService notifyService,
             IUserVerificationRepository userVerificationRepository,
             IUserInvitationRepository userInvitationRepository,
             ICompanyRepository companyRepository,
@@ -40,6 +44,7 @@ namespace TMS.Application.Services
             ITokenService tokenService,
             ILogger<VerificationService> logger)
         {
+            _notifyService = notifyService ?? throw new ArgumentNullException(nameof(notifyService));
             _userVerificationRepository = userVerificationRepository ?? throw new ArgumentNullException(nameof(userVerificationRepository));
             _userInvitationRepository = userInvitationRepository ?? throw new ArgumentNullException(nameof(userInvitationRepository));
             _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
@@ -227,6 +232,13 @@ namespace TMS.Application.Services
                 user.RoleId = ownerRole.Id;
                 user.CompanyId = company.Id;
                 await _userRepository.UpdateAsync(user, cancellationToken);
+                
+                await _notifyService.PublishAsync(
+                    new UserLoggedInEvent()
+                    {
+                        UserId = user.Id,
+                    },
+                    cancellationToken);
 
                 var token = _tokenService.GenerateToken(user.ToUserDto());
 
