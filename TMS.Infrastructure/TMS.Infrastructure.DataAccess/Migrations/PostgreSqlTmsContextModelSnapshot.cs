@@ -22,6 +22,39 @@ namespace TMS.Infrastructure.DataAccess.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("TMS.Infrastructure.DataModels.Advertisement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("content");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Advertisement");
+                });
+
             modelBuilder.Entity("TMS.Infrastructure.DataModels.Board", b =>
                 {
                     b.Property<Guid>("Id")
@@ -717,6 +750,17 @@ namespace TMS.Infrastructure.DataAccess.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserVerifications");
+                });
+
+            modelBuilder.Entity("TMS.Infrastructure.DataModels.Advertisement", b =>
+                {
+                    b.HasOne("TMS.Infrastructure.DataModels.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TMS.Infrastructure.DataModels.Board", b =>

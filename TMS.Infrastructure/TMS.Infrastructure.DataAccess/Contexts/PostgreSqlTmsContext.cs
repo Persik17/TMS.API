@@ -78,6 +78,8 @@ namespace TMS.Infrastructure.DataAccess.Contexts
         public DbSet<SystemSettings> SystemSettings { get; set; }
         public DbSet<TaskFile> TaskFiles { get; set; }
         public DbSet<BoardUser> BoardUsers { get; set; }
+        
+        public DbSet<Advertisement> Advertisements { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PostgreSqlTmsContext"/> class.
