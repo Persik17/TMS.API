@@ -137,6 +137,8 @@ namespace TMS.Application.Services
                     Message = "Ваш код подтверждения"
                 }, cancellationToken);
 
+                // await transaction.CommitAsync(cancellationToken);
+
                 _logger.LogInformation("Registration verification created for {Target}", dto.Email);
 
                 return new RegistrationResultDto
