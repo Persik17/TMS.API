@@ -25,6 +25,8 @@ namespace TMS.Application.Services
 
         private static readonly TimeSpan ColumnCacheExpiry = TimeSpan.FromSeconds(10);
 
+        private static readonly SemaphoreSlim _deleteSemaphore = new(1, 1);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnService"/> class.
         /// </summary>
@@ -152,33 +154,40 @@ namespace TMS.Application.Services
         /// <inheritdoc/>
         public async System.Threading.Tasks.Task DeleteAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
         {
-            if (id == Guid.Empty)
+            await _deleteSemaphore.WaitAsync(cancellationToken);
+            try
             {
-                _logger.LogWarning("Attempted to delete column with empty id");
-                throw new WrongIdException(typeof(Column));
-            }
-
-            if (!await _accessService.HasPermissionAsync(userId, id, ResourceType.Column, cancellationToken))
-            {
-                _logger.LogWarning("User {UserId} has no permission to delete column {ColumnId}", userId, id);
-                throw new ForbiddenException();
-            }
-
-            var tasks = await _taskRepository.GetTasksByColumnIdsAsync(new List<Guid> { id }, cancellationToken);
-            if (tasks != null && tasks.Count > 0)
-            {
-                foreach (var task in tasks)
+                if (id == Guid.Empty)
                 {
-                    await _taskRepository.DeleteAsync(task.Id, cancellationToken);
-                    _logger.LogInformation("Task with id {TaskId} deleted along with column {ColumnId}", task.Id, id);
+                    _logger.LogWarning("Attempted to delete column with empty id");
+                    throw new WrongIdException(typeof(Column));
                 }
+
+                if (!await _accessService.HasPermissionAsync(userId, id, ResourceType.Column, cancellationToken))
+                {
+                    _logger.LogWarning("User {UserId} has no permission to delete column {ColumnId}", userId, id);
+                    throw new ForbiddenException();
+                }
+
+                var tasks = await _taskRepository.GetTasksByColumnIdsAsync(new List<Guid> { id }, cancellationToken);
+                if (tasks != null && tasks.Count > 0)
+                {
+                    foreach (var task in tasks)
+                    {
+                        await _taskRepository.DeleteAsync(task.Id, cancellationToken);
+                        _logger.LogInformation("Task with id {TaskId} deleted along with column {ColumnId}", task.Id, id);
+                    }
+                }
+
+                await _columnRepository.DeleteAsync(id, cancellationToken);
+                await _cacheService.RemoveAsync(CacheKeys.Column(id));
+
+                _logger.LogInformation("Column with id {Id} deleted by user {UserId}", id, userId);
             }
-
-            await _columnRepository.DeleteAsync(id, cancellationToken);
-
-            await _cacheService.RemoveAsync(CacheKeys.Column(id));
-
-            _logger.LogInformation("Column with id {Id} deleted by user {UserId}", id, userId);
+            finally
+            {
+                _deleteSemaphore.Release();
+            }
         }
 
         public async Task<List<ColumnDto>> GetColumnsByBoardIdAsync(Guid boardId, Guid userId, CancellationToken cancellationToken = default)
